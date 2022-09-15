@@ -1,8 +1,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-;                                The Archivist
-;                                  VICfiction
-;                            (c)2022, Jason Justian
+;                                 The Archivist
+;
+;                             VICfiction Story File
+;                            (c) 2022, Jason Justian
 ;                  
 ; Assembled with XA
 ;
@@ -15,7 +16,7 @@
 ;
 ; https://creativecommons.org/licenses/by-nc/4.0/legalcode.txt
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; GAME-SPECIFIC CONFIGURATION SETTINGS
+; STORY-SPECIFIC CONFIGURATION SETTINGS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;            
 ; Colors
 SCRCOL      = 8                 ; Screen color
@@ -26,7 +27,7 @@ COL_ITEM    = 158               ; Item color
 COL_ROOM    = 31                ; Room name color
 COL_DIR     = 159               ; Directional display color
 
-; Game Configuration
+; Story Configuration
 ; When the SCORE_TGT number of items are present in the room id specified
 ; by SCORE_ROOM, the action id specified in SCORE_ACT is triggered
 SCORE_RM    = 1                 ; Score room id
@@ -129,13 +130,14 @@ Rooms:      ; Main Facility (1-3)
 ;     The room name is terminated by ED, after which is the room description,
 ;     also terminated by ED
 rIntake:    .asc "iNTAKE rOOM",ED,"tHIS CIRCULAR ROOM IS",LF
-            .asc "YOUR WORK AREA. tHE",LF,"CURSOR DOMINATES THE",LF
-            .asc "EXACT CENTER OF THE",LF,"SPACE. tHE CONSOLE IS",LF
-            .asc "ABOUT A METER AWAY.",LF,LF,"a LADDER TUBE LEADS",LF
+            .asc "YOUR HOME BASE AT",LF,"WORK.",LF,LF
+            .asc "tHE CURSOR DOMINATES",LF
+            .asc "THE CENTER OF THE",LF,"SPACE. tHE CONSOLE IS",LF
+            .asc "ABOUT A METER AWAY.",LF,LF,"a VERTI-TUBE LEADS",LF
             .asc "DOWN TO aDMIN.",ED
 rOffice:    .asc "bOSS'S oFFICE",ED,"tHE bOSS ISN'T ALWAYS",LF
             .asc "IN, BUT SHE IS TODAY,",LF,"AND SHE GIVES YOU A",LF
-            .asc "SLIGHT NOD AS YOU",LF,"EXIT THE LADDER.",LF,LF
+            .asc "SLIGHT NOD AS YOU",LF,"EXIT THE TUBE.",LF,LF
             .asc "'dAMN BUSY DAY,",LF,"TODAY,' SHE SAYS.",LF,LF
             .asc "tHE DOOR TO THE EAST",LF,"IS MARKED WITH A HUGE",LF
             .asc "RED EXCLAMATION MARK.",ED
@@ -269,7 +271,10 @@ iCursor:    .asc "cURSOR",ED,"tHE CURSOR LOOKS LIKE",LF
 iConsole:   .asc "cONSOLE",ED,"yOU'D THINK THEY'D",LF
             .asc "HAVE FANCIER CONSOLES",LF,"IN THE 63RD CENTURY,",LF
             .asc "BUT THIS CONSOLE IS",LF,"JUST A STAND WITH A",LF
-            .asc "ROTARY CONTROL TO",LF,"dial DESTINATIONS.",ED
+            .asc "ROTARY CONTROL TO",LF,"dial DESTINATIONS.",LF,LF
+            .asc "yOU SUSPECT THEY WERE",LF,"TRYING TO MAKE YOU",LF
+            .asc "COMFORTABLE, WHILE",LF,"TOTALLY MISSING THE",LF
+            .asc "MARK.",ED
 iBoss:      .asc "tHE boss",ED,"tHE bOSS LOOKS LIKE A",LF
             .asc "MIDDLE-AGED WOMAN",LF,"IN A VIOLET LAB COAT,",LF
             .asc "BUT YOU KNOW SHE'S",LF
@@ -277,9 +282,9 @@ iBoss:      .asc "tHE boss",ED,"tHE bOSS LOOKS LIKE A",LF
             .asc "WORKING MENTALLY AT",LF,"THE MOMENT, BUT YOU",LF
             .asc "KNOW YOU CAN ALWAYS",LF,"talk TO HER.",ED
 iReel:      .asc "tEMPORAL reel",ED,"tHE REEL IS THE",LF
-            .asc "REMOTE COMPONENT OF",LF,"THE CURSOR. iT'S A",LF
+            .asc "REMOTE COUNTERPART OF",LF,"THE CURSOR. iT'S A",LF
             .asc "PALM-SIZED WHEEL WITH",LF,"A PARALLEL SMALLER",LF
-            .asc "WHEEL AFFIXED, SOFTLY",LF,"WHIRRING, WITH A",LF
+            .asc "WHEEL AFFIXED, SOFTLY",LF,"WHIRRING, WITH A DIM",LF
             .asc "PULSING AMBER LIGHT.",LF,LF
             .asc "yOU OPERATE IT BY",LF,"windING IT.",ED
 iQuota:     .asc "quota SHEET",ED,"--dUE tODAY--",LF,LF," * 1776",LF
@@ -287,7 +292,8 @@ iQuota:     .asc "quota SHEET",ED,"--dUE tODAY--",LF,LF," * 1776",LF
             .asc "cHERNOV COLLECTS",LF,"YOUR iNTAKE AT 17:00.",LF,
             .asc "yOU JUST NEED TO drop",LF,"ASSETS IN THIS ROOM.",ED
 iWatch:     .asc "pOCKET watch",ED,"18TH cENTURY. a GIFT",LF
-            .asc "FROM dAD. oRNATE.",ED
+            .asc "FROM dAD. oRNATE.",LF,LF,"yOU USUALLY LEAVE IT",LF
+            .asc "IN THE iNTAKE rOOM.",LF,ED
 iYear:      .asc "jUST A YEAR",ED,"dial THE YEAR INTO",LF,"THE CONSOLE.",ED
 iDesk:      .asc "jEFFERSON'S desk",ED,"tHIS IS THE DESK THAT",LF
             .asc "tHOMAS jEFFERSON IS",LF,"USING TO WRITE THE",LF
@@ -417,7 +423,7 @@ aHome:      .asc CLRHOME,"bEING REELED BACK IS",LF,"ALWAYS DISCONCERTING.",LF
             .asc "ONLY A MOMENT AND",LF,"YOU'RE BACK TO YOUR",LF
             .asc "iNTAKE rOOM.",ED
             .asc "yOU DON'T HAVE A",LF,"TEMPORAL REEL.",ED
-aDie:       .asc CRSRUP,CRSRUP,CRSRUP,CRSRUP,"tHE bOSS RUSHES TO",LF
+aDie:       .asc CRSRUP,CRSRUP,CRSRUP,"tHE bOSS RUSHES TO",LF
             .asc "TACKLE YOU BUT IT'S",LF,"TOO LATE. yOU NOTICE",LF
             .asc "A MAGNIFICENT FUTURE",LF,"CITYSCAPE FOR ONLY A",LF
             .asc "MOMENT BEFORE THE",LF,"bUBBLE COLLAPSES",LF

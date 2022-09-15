@@ -1,11 +1,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ;                               VICfiction Engine
-;                            (c)2022, Jason Justian
+;
+;                            (c) 2022, Jason Justian
 ;                  
 ; Assembled with XA
 ;
-; xa -o gamename.bin ./src/VICfiction.asm ./src/GameName.asm
+; xa -o story_name.bin ./src/VICfiction.asm ./src/StoryName.story.asm
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -20,7 +21,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; VICFICTION SETTINGS AND LABELS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;            
-; Game Memory Locations
+; Engine Memory Locations
 VERB_ID     = $00               ; Verb ID
 ITEM_ID     = $01               ; Item ID
 PATTERN     = $02               ; Pattern (2 bytes) 
@@ -82,7 +83,7 @@ EV          = $ff               ; Special action id for triggered action
 ; RAM Start
 ; Used as jump to game when loaded from disk
 ; SYS8192
-RAMStart:   jmp NewGame         ; BYPASS CARTRIDGE STUFF
+RAMStart:   jmp NewStory        ; BYPASS CARTRIDGE STUFF
 
 ; Initialize
 ; Used as target of autostart.asm in block 5
@@ -92,14 +93,14 @@ Init:       jsr $fd8d           ; Test RAM, initialize VIC chip
             jsr $e518           ; Initialize hardware
             jsr $c67a           ; Set some BASIC values, mostly $16
             cli                 ; Clear interrupt flag from ROM jump
-            lda #<NewGame       ; Install the custom NMI (restart)
+            lda #<NewStory      ; Install the custom NMI (restart)
             sta NMINV           ; ,, 
-            lda #>NewGame       ; ,,
+            lda #>NewStory      ; ,,
             sta NMINV+1         ; ,,            
-            ; Fall through to New Game
+            ; Fall through to New Story
 
-; New Game
-NewGame:    bit VIA1PA1         ; Reset NMI
+; New Story
+NewStory:   bit VIA1PA1         ; Reset NMI
             lda #SCRCOL         ; Set screen color
             sta VIC+$0f         ; ,,
             lda VIC+$05         ; Set lowercase character set
@@ -132,7 +133,7 @@ NewGame:    bit VIA1PA1         ; Reset NMI
             lda #<Intro         ; Show intro
             ldy #>Intro         ; ,,
             jsr PrintMsg        ; ,,            
-            jmp GameEntry       ; Show room name before game starts
+            jmp EntryPt         ; Show room name before game starts
                  
 ; Verb Not Found
 ; Show an error message, then go back for another command 
@@ -185,8 +186,8 @@ Process:    lda #0              ; Clear the action success and failure
             ldx #$ff            ; Look for actions for this command's verb
 next_act:   inx                 ; ,,
             lda ActVerb,x       ; ,,
-            bne have_verb       ; After game-specific actions, do built-in
-            jmp PostAction      ; Game-specific actions are done
+            bne have_verb       ; After story actions
+            jmp PostAction      ;   do basic actions
 have_verb:  cmp VERB_ID         ; ,,
             bne next_act        ; ,,
 filter_rm:  lda ActInRoom,x     ; Filter action by room
@@ -416,7 +417,7 @@ try_move:   lda (RM),y          ; Get the room id at the found index
             beq go_fail         ; Player is going an invalid direction
             jsr MoveTo          ; Set room address (RM) and CURR_ROOM            
             jsr AdvTimer        ; Timer advance or countdown on move
-GameEntry:  lda #COL_ROOM       ; Always show room name after move
+EntryPt:    lda #COL_ROOM       ; Always show room name after move
             jsr CHROUT          ; ,,
             jsr Linefeed        ; ,,
             jsr RoomName        ; ,,
