@@ -1,0 +1,21 @@
+#!/bin/bash
+
+xa -l toc -o ./vic/archivist.bin ./src/archivist.asm
+printf "\x00\x20" | cat - ./vic/archivist.bin > ./vic/archivist.prg
+cp ./vic/archivist.prg ~/vic20/archivist
+xa -o ./vic/autostart.bin ./src/autostart.asm
+cat ./vic/autostart.bin ./src/jolly.bin | head -c 8192 > ./vic/autostart.eep
+printf "\x00\xa0" | cat - ./vic/autostart.bin > ~/vic20/autostart.prg
+
+# Build ROM for Jolly Cartridge
+# So, block 1 goes to $e000 and block 2 goes to $c000
+# Autostart for $a000 goes to... hey, $a000!
+# Split the binary file up into two parts
+cat ./vic/archivist.bin | head -c 8192 > ./vic/block1.bin
+cat ./vic/archivist.bin ./src/jolly.bin | head -c 16384 > ./vic/int
+cat ./vic/int | tail -c 8192 > ./vic/block2.bin
+rm ./vic/int
+cat ./src/jolly.bin | head -c 8192 > ./vic/int
+cat ./vic/int ./vic/int ./vic/autostart.eep ./vic/int ./vic/int ./vic/int ./vic/block2.bin ./vic/block1.bin > ./vic/archivist.eep
+rm ./vic/int
+

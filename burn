@@ -1,0 +1,4 @@
+#!/bin/bash
+
+minipro -p M27C512@DIP28 -w ./vic/archivist.eep
+
