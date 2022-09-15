@@ -202,14 +202,13 @@ item_ok:    jsr EvalAction      ; Evaluate the action
             jmp next_act        ; Get the next action
 
 ; Do Event
-; When an event triggers an action, clear the verb and item command ids
-; before performing that action, to prevent a loop of actions.           
-DoEvent:    cpx #0
-            bne do_event
-            rts
-do_event:   lda #0
-            sta ACT_SUCCESS
-            sta ACT_FAILURE
+; Prepare to evaluate a single action (id in X)           
+DoEvent:    cpx #0              ; If no action is specified, do nothing
+            bne do_event        ; ,,
+            rts                 ; ,,
+do_event:   lda #0              ; Clear success and failure flags for use
+            sta ACT_SUCCESS     ;   by caller
+            sta ACT_FAILURE     ;   ,,
             ; Fall through to EvalAction
             
 EvalAction: jsr NormCol         ; Messages will be normal color
@@ -263,8 +262,8 @@ is_from:    sta FROM_ID         ; Store the From ID temporarily
             sta TIMER           ;   ,,
 not_trig:   rts                 ; Finish processing this action
 xform:      sta TO_ID           ; Transform - Put To where From is
-            cmp FROM_ID
-            beq eval_r
+            cmp FROM_ID         ;   If from and to are the same, no transform
+            beq eval_r          ;   ,,
             ldy FROM_ID         ;   Get the From item's current location
             lda ITEM_ROOMS-1,y  ;   ,,
             ldy TO_ID           ;   And store it into the To index
@@ -445,32 +444,33 @@ PrintRet:   jsr PrintMsg        ; ,,
 go_r:       jmp Main    
 
 ; Do Get            
-DoGet:      lda ITEM_ID
-            beq get_fail
-            jsr ItemInv
-            bcs have_it
-            jsr ItemInRm
-            bcc get_fail
-            tax
-            lda ItemProp-1,x
-            and #IS_UNMOVE
-            bne unmoving
-            lda INVENTORY
-            bne ch_empty
-            stx INVENTORY
-            jmp got_it
-ch_empty:   lda INVENTORY+1
-            bne hands_full
-            stx INVENTORY+1
-got_it:     lda #0
-            sta ITEM_ROOMS-1,x
-Confirm:    lda #<ConfirmTx
-            ldy #>ConfirmTx
-            jmp PrintRet
+DoGet:      lda ITEM_ID         ; Is there an item to get?
+            beq get_fail        ;   If not, say it's not here
+            jsr ItemInv         ; Is the item in inventory already?
+            bcc ch_in_rm        ; ,,
+            lda #<HaveItTx      ; If in inventory, show the "already have it"            
+            ldy #>HaveItTx      ;   message
+            jmp PrintRet        ;   ,,
+ch_in_rm:   jsr ItemInRm        ; If the item is not available to get, then
+            bcc get_fail        ;   say it's not here
+            tax                 ; X = Item ID
+            lda ItemProp-1,x    ; Is this an un-moveable item?
+            and #IS_UNMOVE      ; ,,
+            bne unmoving        ; ,,
+            lda INVENTORY       ; Is the left hand available? If so, pick it
+            bne ch_empty        ;   up and store it there
+            stx INVENTORY       ;   ,,
+            jmp got_it          ;   ,,
+ch_empty:   lda INVENTORY+1     ; Otherwise, is the right hand available?
+            bne hands_full      ;   If not, show "hands full" message
+            stx INVENTORY+1     ;   If so, store it there
+got_it:     lda #0              ; Clear the item from the room
+            sta ITEM_ROOMS-1,x  ; ,,
+Confirm:    lda #<ConfirmTx     ; Confirm the pick up
+            ldy #>ConfirmTx     ; ,,
+            jmp PrintRet        ; ,,
+            ; Print various messages
 get_fail:   jmp NotHere
-have_it:    lda #<HaveItTx       
-            ldy #>HaveItTx
-            jmp PrintRet
 unmoving:   lda #<NoMoveTx
             ldy #>NoMoveTx
             jmp PrintRet
@@ -479,17 +479,17 @@ hands_full: lda #<FullTx
             jmp PrintRet
      
 ; Show Inventory       
-ShowInv:    lda #COL_ITEM
-            jsr CHROUT
-            ldy #1
--loop:      lda INVENTORY,y
-            beq nothing
-            tax
-            sty TEMP
-            lda ItemTxtL-1,x
-            ldy ItemTxtH-1,x
-            jsr PrintNoLF
-            ldy TEMP
+ShowInv:    lda #COL_ITEM       ; Set inventory color
+            jsr CHROUT          ; ,,
+            ldy #1              ; Y is the hand index
+-loop:      lda INVENTORY,y     ; Look in this hand
+            beq nothing         ; If nothing's in it, iterate
+            tax                 ; X is the item index
+            sty TEMP            ; Stash Y against print subroutine
+            lda ItemTxtL-1,x    ; Output the name
+            ldy ItemTxtH-1,x    ; ,,
+            jsr PrintNoLF       ; ,,
+            ldy TEMP            ; Restore Y
 nothing:    dey
             bpl loop
             jmp Main    
@@ -541,23 +541,23 @@ verb_found: lda VerbID-1,y      ; Cross-reference VerbID to handle synonyms
 ; Is Item In Room?
 ; Specify Item ID in A  
 ; Carry set if in room          
-ItemInRm:   tay
-            lda ITEM_ROOMS-1,y
-            cmp CURR_ROOM
-            beq yes_in_rm
-            tya
-in_inv:     cmp INVENTORY
-            beq yes_in_rm
-            cmp INVENTORY+1
-            beq yes_in_rm
-ch_global:  lda ItemProp-1,y
-            and #IS_GLOBAL
-            bne yes_in_rm
-no_in_rm:   tya
-            clc
+ItemInRm:   tay                 ; Y is the Item ID
+            lda ITEM_ROOMS-1,y  ; Is the item in the current room?
+            cmp CURR_ROOM       ; ,,
+            beq yes_in_rm       ; ,,
+            tya                 ; Is the item in inventory?
+in_inv:     cmp INVENTORY       ; ,, (left hand)
+            beq yes_in_rm       ; ,,
+            cmp INVENTORY+1     ; ,, (right hand)
+            beq yes_in_rm       ; ,,
+ch_global:  lda ItemProp-1,y    ; Is the item a global item?
+            and #IS_GLOBAL      ; ,,
+            bne yes_in_rm       ; ,,
+no_in_rm:   tya                 ; Restore A for caller
+            clc                 ; Clear carry (not in room)
             rts
-yes_in_rm:  tya
-            sec
+yes_in_rm:  tya                 ; Restore A for caller
+            sec                 ; Set carry (in room)
             rts
 
 ; Is Item In Inventory
@@ -622,9 +622,9 @@ setaddr_r:  pla
 ; Set Room Name
 ; Set up A and Y for room description display. This should be followed by
 ; PrintAlt (for name), or PrintMsg (for description)         
-RoomName:   jsr IsLight
-            bcs sees_name
-            jmp ShowNoSee
+RoomName:   jsr IsLight         ; Is the room illuminated?
+            bcs sees_name       ; ,,
+            jmp ShowNoSee       ; ,,
 sees_name:  ldy #8              ; 8 = desc low byte parameter
             lda (RM),y          ; A is low byte
             pha                 ; Push low byte to stack
@@ -648,9 +648,9 @@ AdvTimer:   lda TIMER           ; If the timer is 0, then it's not active
             jsr DoEvent         ; ,,
 timer_r:    rts
 
-RoomDesc:   jsr IsLight
-            bcs sees_desc
-            jmp ShowNoSee
+RoomDesc:   jsr IsLight         ; Is the room illuminated?
+            bcs sees_desc       ; ,,
+            jmp ShowNoSee       ; ,,
 sees_desc:  jsr NormCol         ; Otherwise look refers to a whole room
             jsr RoomName        ; Get room information
             jsr PrintAlt        ; ,,
@@ -679,8 +679,8 @@ next_item:  inx                 ; ,,
             jmp next_item       ; Go to the next item
             
             ; Directional display
-DirDisp:    lda #COL_DIR
-            jsr CHROUT
+DirDisp:    lda #COL_DIR        ; Set directional display color
+            jsr CHROUT          ; ,,
             lda #'('            ; Open paren
             jsr CHROUT          ; ,,
             ldy #5              ; 5 is room index for North parameter
@@ -717,19 +717,19 @@ ShowScore:  ldx #0              ; X is the item index
             bne loop            ;   ,,  
             inc SCORE           ; Increment score if it qualifies  
             bne loop          
-ch_score:   ldx SCORE
-            beq score_r 
-            lda #<ScoreTx
-            ldy #>ScoreTx
-            jsr PRINT
-            ldx SCORE
-            lda #0
-            jsr PRTFIX
-            lda #'/'
-            jsr CHROUT
-            ldx #SCORE_TGT
-            lda #0
-            jsr PRTFIX
+ch_score:   ldx SCORE           ; If there's no score, don't display
+            beq score_r         ; ,,
+            lda #<ScoreTx       ; Print the score text
+            ldy #>ScoreTx       ; ,,
+            jsr PRINT           ; ,,
+            ldx SCORE           ; Use BASIC's PRTFIX to show the decimal score
+            lda #0              ; ,, (X is low byte, A is high byte)
+            jsr PRTFIX          ; ,,
+            lda #'/'            ; Slash for "of"
+            jsr CHROUT          ; ,,
+            ldx #SCORE_TGT      ; And now show the target score
+            lda #0              ; ,,
+            jsr PRTFIX          ; ,,
             jsr Linefeed
 score_r:    rts
  
