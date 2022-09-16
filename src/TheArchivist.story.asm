@@ -39,12 +39,12 @@ SCORE_ACT   = 2                 ; Action id when score is achieved
 ST_ITEM_L   = 6                 ; Starting Item ID, left hand
 ST_ITEM_R   = 0                 ; Starting Item ID, right hand 
 
-; Timer Configuration
-TIMER_START = 4                 ; Timer starting value
-TIMER_DIR   = $04               ; Timer direction ($01 = +1, $ff = -1)
-TIMER_TGT   = 248               ; Timer target (at which TIMEOUT_ACT happens)
-TIMEOUT_ACT = 0                 ; Timeout action ID
-TRIGGER     = 0                 ; Timer value when triggered
+; Clock Configuration
+CLOCK_INIT  = 4                 ; Timer starting value
+CLOCK_DIR   = $04               ; Timer direction ($01 = +1, $ff = -1)
+CLOCK_TGT   = 248               ; Timer target (at which TIMER_ACT happens)
+CLOCK_ACT   = 0                 ; Timer Action ID (when TIMER_TGT is reached)
+CLOCK_TR    = 0                 ; Timer value when triggered
 TIME_OFFSET = 9                 ; Display time offset (e.g., for clocks)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -57,11 +57,11 @@ Directions: .asc 'DUEWSN' ; Compass directions
 Intro:      .asc CLRHOME,COL_NORM,"yOU ARRIVE AT WORK",LF,"IN THE USUAL WAY, BY"
             .asc LF,"CURSOR. aFTER ALL,",LF,"YOU LIVE IN 1841. yOU",LF
             .asc "ONLY work IN 6205.",LF,LF,"yOU STRAIGHEN YOUR",LF
-            .asc "GLASSES AND GLANCE AT",LF,"YOUR QUOTA SHEET.",LF,LF
+            .asc "GLASSES AND GLANCE AT",LF,"THE JOB SCREEN.",LF,LF
             .asc "dAMN BUSY DAY AHEAD.",LF,LF,
-            .asc 156,"tHE aRCHIVIST",LF,LF,"2022, jASON jUSTIAN",LF,
+            .asc 156,"tHE aRCHIVIST",LF,LF,"jASON jUSTIAN 2022",LF,
             .asc "bEIGE mAZE vic lAB",ED
-ScoreTx:    .asc "iNTAKE:",ED
+ScoreTx:    .asc "qUOTA: ",ED
 NoVerbTx:   .asc COL_ALERT,"nO NEED TO DO THAT",ED
 NoDropTx:   .asc COL_ALERT,"yOU DON'T HAVE THAT",ED
 HaveItTx:   .asc COL_ALERT,"yOU ALREADY HAVE IT",ED
@@ -79,18 +79,26 @@ ConfirmTx:  .asc COL_ALERT,"ok",ED
 ; VerbID - Cross-referenced ID list for verb synonyms
 ; Basic - GO (MovE), LooK (L,EX), GeT (TakE), DroP, InventorY (I)
 ; Game - TALK(6), WIND(7), DIAL(8), SET(2), SWAP(9), BUY(10), CATCH(11)
-;        OPEN(12)
+;        OPEN(12), PANIC(13)
 ; Verb IDs are 1-indexed
 Verb1:      .byte 'G','M','L','L','E','G','T','D','I','I'   ; Basic Verbs
-            .byte 'T','W','D','R','S','B','C','O',ED
+            .byte 'T','W','D','R','S','B','C','O','P',ED
 VerbL:      .byte 'O','E','K','L','X','T','E','P','Y','I'   ; Basic Verbs
-            .byte 'K','D','L','D','P','Y','H','N'
+            .byte 'K','D','L','D','P','Y','H','N','C'
 VerbID:     .byte  1,  1,  2,  2,  2,  3,  3,  4,  5,  5    ; Basic Verbs
-            .byte  6,  7,  8,  2,  9, 10, 11, 12
+            .byte  6,  7,  8,  2,  9, 10, 11, 12, 13
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ROOMS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;            
+;    D,U,E,W,S,N specify the Room ID for the room in that direction. 0 if there's
+;        nothing that way
+;    ActID  - Specifes the Action ID that happens whenever the player walks
+;      into this room
+;    RmProp - Room properties
+;      Bit 0 - The room is dark. The player can't see unless carrying an item
+;              with the IS_LIGHT property
+;      Bit 1 - Direction Display is suppressed
 ; Room IDs are 1-indexed
 Rooms:      ; Main Facility (1-3)
             ;     D, U, E, W, S, N, ActID, RmProp, DescL, DescH
@@ -130,12 +138,13 @@ Rooms:      ; Main Facility (1-3)
 ;     The room name is terminated by ED, after which is the room description,
 ;     also terminated by ED
 rIntake:    .asc "iNTAKE rOOM",ED,"tHIS CIRCULAR ROOM IS",LF
-            .asc "YOUR HOME BASE AT",LF,"WORK.",LF,LF
+            .asc "YOUR HOME BASE AT",LF,"WORK. a SCREEN WRAPS",LF
+            .asc "AROUND THE WALL.",LF,LF
             .asc "tHE CURSOR DOMINATES",LF
             .asc "THE CENTER OF THE",LF,"SPACE. tHE CONSOLE IS",LF
-            .asc "ABOUT A METER AWAY.",LF,LF,"a VERTI-TUBE LEADS",LF
+            .asc "ABOUT A METER AWAY.",LF,LF,"a vERTI-tUBE LEADS",LF
             .asc "DOWN TO aDMIN.",ED
-rOffice:    .asc "bOSS'S oFFICE",ED,"tHE bOSS ISN'T ALWAYS",LF
+rOffice:    .asc "aDMIN oFFICE",ED,"tHE bOSS ISN'T ALWAYS",LF
             .asc "IN, BUT SHE IS TODAY,",LF,"AND SHE GIVES YOU A",LF
             .asc "SLIGHT NOD AS YOU",LF,"EXIT THE TUBE.",LF,LF
             .asc "'dAMN BUSY DAY,",LF,"TODAY,' SHE SAYS.",LF,LF
@@ -192,7 +201,7 @@ rJail:      .asc "dETROIT jAIL",ED,"tHE CELL IS LIKE 2x2",LF
             .asc "hOPEFULLY YOU HAVE",LF,"YOUR REEL.",ED
 rAnteCh:    .asc "aNTECHAMBER",ED,"tOMB OF nEFERTARI,",LF
             .asc "vALLEY OF THE qUEENS,",LF,"lUXOR.",LF,LF
-            .asc "tHE SMARTPHONE HAS",LF,"ENOUGH ILLUMINATION",LF
+            .asc "yOUR IpHONE HAS",LF,"ENOUGH ILLUMINATION",LF
             .asc "FOR YOU TO FIND YOUR",LF,"WAY, AND FOR YOU TO",LF
             .asc "APPRECIATE THE RICHLY",LF,"COLORED ILLUSTRATIONS",LF
             .asc "THAT COVER THE WALLS.",ED
@@ -218,6 +227,17 @@ rResOs:     .asc "rESIDENCE OF oSIRIS",ED,"tHIS CEREMONIAL ROOM",LF
             .asc "WAS PROVIDED TO HELP",LF,"nEFERTARI PASS TO THE",LF
             .asc "AFTERLIFE.",ED
 
+; Room Timers
+; RTimerRm   - The room that causes the timer to start, when entered for the
+;   first time
+; RTimerInit - The number of turns to which the timer is set when started
+; RTimerAct  - The Action ID that's executed when the timer reaches 0
+;
+; Memory is allocated to keep track of 64 Room Timers
+RTimerRm:   .asc ED
+RTimerInit: .asc 0
+RTimerAct:  .asc 0 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ITEMS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;            
@@ -231,7 +251,7 @@ rResOs:     .asc "rESIDENCE OF oSIRIS",ED,"tHIS CEREMONIAL ROOM",LF
 ;     Bit 3 = Is timekeeping device (shows number of action attempts) 
 ;     Bit 4 = Is trigger for timer (when this item is moved to a room, the
 ;             timer starts)
-;     Bit 5 = Is global (can be interacted with from any room)
+;     Bit 5 = (Future Expansion)
 ;     Bit 6 = Is scored (counts as 1 point when dropped in score room)
 ;     Bit 7 = Is light source (rooms with "is dark" can be seen)
 ;   ItemTxt  - Address of item name and description
@@ -239,16 +259,16 @@ rResOs:     .asc "rESIDENCE OF oSIRIS",ED,"tHIS CEREMONIAL ROOM",LF
 ;    also terminated by ED)
 ; 
 ; Item IDs are 1-indexed
-Item1:      .byte 'C','C','B','R','Q','W','1','D','1','S','*','J','B'
+Item1:      .byte 'C','C','B','R','S','W','1','D','1','I','*','J','B'
             .byte 'T','C','1','G','*','*','*','1','S','P','I','N','P'
             .byte 'B','F','S',ED
-ItemL:      .byte 'R','E','S','L','A','H','6','K','1','E','*','N','L'
+ItemL:      .byte 'R','E','S','L','N','H','6','K','1','E','*','N','L'
             .byte 'T','N','4','E','*','*','*','C','S','E','S','E','T'
             .byte 'T','S','L'
 ItemRoom:   .byte  1 , 1,  2 , 2 , 1 , 0,  1 , 6 , 1 , 1 , 6 , 0 , 0
             .byte  0 , 8,  1 ,13 ,11 , 0,  0 , 1 ,19 ,21 , 0 , 21,20
             .byte 21 ,20, 20
-ItemProp:   .byte  3 , 3,  3 , 0, 0 , 8,  3 ,$40,  3 ,$80, 7 , 2 ,$40
+ItemProp:   .byte  3 , 3,  3 , 0,  3 , 8,  3 ,$40,  3 ,$88, 7 , 2 ,$40
             .byte  0 , 0,  3 , 1 , 7 , 7,  7 , 3,  2 , 0 ,35 , 0 , 0
             .byte  0 , 2,$40
 ItemTxtL:   .byte <iCursor,<iConsole,<iBoss,<iReel,<iQuota,<iWatch,<iYear
@@ -287,8 +307,14 @@ iReel:      .asc "tEMPORAL reel",ED,"tHE REEL IS THE",LF
             .asc "WHEEL AFFIXED, SOFTLY",LF,"WHIRRING, WITH A DIM",LF
             .asc "PULSING AMBER LIGHT.",LF,LF
             .asc "yOU OPERATE IT BY",LF,"windING IT.",ED
-iQuota:     .asc "quota SHEET",ED,"--dUE tODAY--",LF,LF," * 1776",LF
-            .asc " * 1934",LF," * 2022",LF," * 1255bc",LF," * 23",LF,LF
+iQuota:     .asc "sCREEN",ED
+            .asc "    ",176,192,"dUE tODAY",192,174,LF
+            .asc "    ",221,    "  * 1776   ",221,LF
+            .asc "    ",221,    "  * 1934   ",221,LF
+            .asc "    ",221,    "  * 2022   ",221,LF
+            .asc "    ",221,    "  * 3449   ",221,LF
+            .asc "    ",221,    "  * 1255bc ",221,LF
+            .asc "    ",173,192,192,192,192,192,192,192,192,192,192,192,189,LF
             .asc "cHERNOV COLLECTS",LF,"YOUR iNTAKE AT 17:00.",LF,
             .asc "yOU JUST NEED TO drop",LF,"ASSETS IN THIS ROOM.",ED
 iWatch:     .asc "pOCKET watch",ED,"18TH cENTURY. a GIFT",LF
@@ -301,9 +327,13 @@ iDesk:      .asc "jEFFERSON'S desk",ED,"tHIS IS THE DESK THAT",LF
             .asc "GOES MISSING, HE'LL",LF,"WRITE IT ON SOMETHING",LF
             .asc "ELSE.",LF,LF,"iF IT SEEMS THERE'S A",LF
             .asc "PARADOX HERE, THAT'S",LF,"cHERNOV'S PROBLEM.",ED
-iPhone:     .asc "smartphone",ED,"nOT IN THE LEAST",LF,"ANACHRONISTIC, IT'S"
-            .asc LF,"A 150MM BY 75MM SLAB",LF,"WITH A BRIGHT SCREEN.",LF,LF
-            .asc "zERO BARS.",ED
+iPhone:     .asc "IpHONE",ED,"nOT IN THE LEAST",LF,"ANACHRONISTIC, IT'S",LF
+            .asc "A 150MM BY 75MM SLAB",LF,"WITH A BRIGHT SCREEN.",LF,LF
+            .asc "tHE LOCK SCREEN",LF,"DEPICTS THE",LF
+            .asc "hITCHHIKER'S gUIDE TO",LF,"THE gALAXY LOGO, AND",LF
+            .asc "SAYS ", COL_ITEM, "don't panic",COL_NORM,LF,"UNDER THAT."
+            .asc LF,LF,"zERO BARS.",LF,LF
+            .asc "cLOCK AT TOP READS",ED
 iJefferson: .asc "tHOMAS jefferson",ED,"yES, that jEFFERSON.",ED
 iBall:      .asc "rUTH'S hOME rUN ball",ED,"bABE rUTH HIT HIS",LF
             .asc "700TH HOME RUN WITH",LF,"THIS BASEBALL.",ED
@@ -320,14 +350,14 @@ iPlaque:    .asc "iNSCRIBED gOLD plaque",ED,"yOUR ANCIENT eGYPTIAN",LF,
             .asc "(silver & bronze too!)",LF,COL_NORM
             .asc "eGYPTIAN MUMMY CURSE?",LF,"that CAN'T BE A REAL",LF
             .asc "THING. rIGHT...?",ED
-iSarc:      .asc "sarcophagus",ED,"nEFERTARI'S FINAL",LF
+iSarc:      .asc "sARCHOPHAGUS",ED,"nEFERTARI'S FINAL",LF
             .asc "RESTING PLACE IS",LF,"AMAZING, LIKE",LF
             .asc "EVERYTHING HERE.",LF,"sTUNNING ROSE",LF
             .asc "GRANITE, INLAID WITH",LF,"GOLD AND CARNELIAN.",LF
             .asc "tHE qUEEN'S CARVED",LF,"FACE LOOKS HOPEFULLY",LF
             .asc "AT THE CEILING.",ED
-iIllus:     .asc ED,"tHEY JUST CAN'T BE",LF,"ADEQUATELY EXPRESSED",LF
-            .asc "IN THIS MEDIUM. iF",LF,"YOU'RE STUCK IN THE",LF
+iIllus:     .asc "tHEY JUST CAN'T BE",LF,"ADEQUATELY EXPRESSED",LF ; Referenced
+            .asc "IN THIS MEDIUM. iF",LF,"YOU'RE STUCK IN THE",LF  ; as action
             .asc "21ST CENTURY, TRY",LF,"gOOGLE.",ED
 iNecklace:  .asc "gILDED necklace",ED,"sEVEN PLATES OF",LF
             .asc "PRESSED ROSE GOLD",LF,"ARRANGED ON A WOVEN",LF
@@ -348,7 +378,7 @@ iSandal:    .asc "nEFERTARI'S sandal",ED,"aN INTRICATELY-WOVEN",LF
             .asc "PAPYRUS SANDAL.",LF,"wOMENS' SIZE 9.",ED
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; ACTIONS
+; STORY ACTIONS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;            
 ;   ActVerb    - The Verb ID for this action
 ;   ActItem    - The Item ID for this action. If 0, no item is used.
@@ -389,29 +419,39 @@ iSandal:    .asc "nEFERTARI'S sandal",ED,"aN INTRICATELY-WOVEN",LF
 ; Action IDs are zero-indexed, and the action id $ff (EV) is reserved for
 ; actions triggered by events (timer target, enters-room, score target)
 ActVerb:    .byte 6,7,EV,8,8,3, 3,  6, 9,  9, 9,EV, 8,10,EV,11,11,11
-            .byte EV, 8,12,ED
+            .byte EV, 8,12,2,2,2,2,2,2,2
+            .byte 13,ED
 ActItem:    .byte 3,4,0, 7,9,8, 8, 12,10,  4, 0,0 ,16,14, 0,13,13,13
-            .byte 0, 21,22
-ActInRoom:  .byte 0,0,0, 0,0,0, 0,  0, 6,  6, 6,0,  0, 9, 0,11,11,11
-            .byte 0,  0, 0
+            .byte 0, 21,22,24,24,24,24,24,24,24
+            .byte 0
+ActInRoom:  .byte 0,0,0, 0,0,0, 0,  6, 6,  6, 6,0,  0, 9, 0,11,11,11
+            .byte 0,  0, 0,16,17,18,19,20,21,22
+            .byte 0
 ActInvCon:  .byte 0,4,0, 0,0,0, 0,  0,10,  4, 0,0,  0,15, 0, 0,17, 0
-            .byte 13, 0, 0
+            .byte 13, 0, 0,0,0,0,0,0,0,0
+            .byte 0
 ActRoomCon: .byte 3,0,0, 1,1,11,12, 0,12, 12,12,0 , 1, 0,18,20,19,19
-            .byte 0,  1,22
+            .byte 0,  1,22,0,0,0,0,0,0,0
+            .byte 0
 ActInvExcl: .byte 0,1,0, 0,0,8, 8,  8, 8,  8, 8,14, 0, 0, 0,0,  0, 0
-            .byte 0,  0, 0
+            .byte 0,  0, 0,0,0,0,0,0,0,0
+            .byte 0
 ActFrom:    .byte 1,0,0, 0,0,11,1,  1, 10, 4, 1,0 , 0,15,18,1, 17,19
-            .byte 0,  0, 1
+            .byte 0,  0, 1,1,1,1,1,1,1,1
+            .byte 1
 ActTo:      .byte 1,1,0, 4,0,12,1,  1, 8,  8, 1,9 , 9,14,19,1, 13,20
-            .byte 15,16, 1
+            .byte 15,16, 1,1,1,1,1,1,1,1
+            .byte 1
 ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aJeffOffer,<aJeffAcc,<aJeffAcc,<aJeffDecl
             .byte <aNeedTix,<aX,<aBuyTix,<aBallHit,<aMissed,<aTryCatch,0
-            .byte <aToJail,<aX,<aOpSarc
+            .byte <aToJail,<aX,<aOpSarc,<iIllus,<iIllus,<iIllus,<iIllus
+            .byte <iIllus,<iIllus,<iIllus,<aPanic
 ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aJeffOffer,>aJeffAcc,>aJeffAcc,>aJeffDecl
             .byte >aNeedTix,>aX,>aBuyTix,>aBallHit,>aMissed,>aTryCatch,0
-            .byte >aToJail,>aX,>aOpSarc
+            .byte >aToJail,>aX,>aOpSarc,>iIllus,>iIllus,>iIllus,>iIllus
+            .byte >iIllus,>iIllus,>iIllus,>aPanic
             
 ; Action Results
 aBoss:      .asc "'hAVE A GREAT DAY,",LF,"AND DON'T FORGET YOUR",LF
@@ -449,10 +489,11 @@ aJeffSay:   .asc "'i DON'T THINK THIS",LF,"BELONGS TO YOU,'",LF
             .asc "jEFFERSON FROWNS.",ED,ED
 aJeffOffer: .asc "'i INVENTED THIS DESK",LF,"AND i'M NOT GOING TO",LF
             .asc "LET YOU TAKE IT.",LF,LF,"'bUT... yOU LOOK LIKE",LF
-            .asc "SOMEONE WITH ACCESS",LF,"TO GREAT FUTURISTIC",LF
-            .asc "INVENTIONS. iF YOU",LF,"BRING ME SOMETHING",LF
-            .asc "FROM THE FUTURE, i'LL",LF,"swap IT FOR MY",LF
-            .asc "EXCELLENT DESK!'",ED,"'oUR BUSINESS IS",LF
+            .asc "SOMEONE WITH ACCESS",LF,"TO FUTURISTIC THINGS.",LF,LF
+            .asc "'iF YOU BRING ME",LF,"SOMETHING INSANELY",LF
+            .asc "GREAT FROM YOUR",LF,"FUTURE, i SHALL swap",LF
+            .asc "MY MOST EXCELLENT",LF,"DESK FOR IT!'",ED            
+            .asc "'oUR BUSINESS IS",LF
             .asc "CONCLUDED. i BID YOU",LF,"GOOD DAY.'",ED
 aJeffDecl:  .asc "'i HAVE ABSOLUTELY NO",LF,"INTEREST IN THAT.'",ED
             .asc "nOBODY TO SWAP WITH!",ED
@@ -487,3 +528,4 @@ aToJail:    .asc "a LITTLE KID CRIES",LF,"AND POINTS AT YOU,",LF
 aOpSarc:    .asc "dID YOU MISS THE BIT",LF,"ABOUT THE GRANITE?",LF
             .asc "tHE LID ALONE WEIGHS",LF,"SEVERAL THOUSAND KG,",LF
             .asc "AND IT'S NOT WHAT",LF,"YOU'RE HERE FOR.",ED,ED
+aPanic:     .asc "nOT SURPRISED.",ED,ED
