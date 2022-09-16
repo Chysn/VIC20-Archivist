@@ -419,18 +419,12 @@ ShortGo:    ldy #5              ; 5 is room index for North parameter
 try_move:   lda (RM),y          ; Get the room id at the found index
             beq go_fail         ; Player is going an invalid direction
             jsr MoveTo          ; Set room address (RM) and CURR_ROOM            
-            jsr AdvTimers       ; Timer advance or countdown on move
 EntryPt:    lda #COL_ROOM       ; Always show room name after move
             jsr CHROUT          ; ,,
             jsr Linefeed        ; ,,
             jsr RoomName        ; ,,
             jsr PrintMsg        ; ,,
-ch_rm_act:  ldy #6              ; Is there an entry action for this room?
-            lda (RM),y          ; ,,
-            beq ch_first        ; ,,
-            tax                 ; If so, set action and
-            jsr DoEvent         ;   attempt it
-            bit ACT_SUCCESS     ; If the room action was successful, don't
+            bit ACT_SUCCESS     ; If a room action was successful, don't
             bmi go_r            ;   show anything further
 ch_first:   ldx CURR_ROOM       ; Is this the first time this room has been
             lda SEEN_ROOMS-1,x  ;   visited?
@@ -602,7 +596,7 @@ MoveTo:     sta CURR_ROOM
             ldx CURR_ROOM       ; X = room id
             dex                 ; zero-index it
             beq ch_room_t       ; if first room, (RM) is already set
--loop:      lda #10             ; Add 10 for each id
+-loop:      lda #9              ; Add 9 for each id
             clc                 ; ,,
             adc RM              ; ,,
             sta RM              ; ,,
@@ -622,7 +616,8 @@ ch_room_t:  ldx #$ff            ; Check Room Timers. X is the Room Timer ID
             lda RTimerInit,x    ; Initialize the timer countdown
             sta ROOM_TIMERS,x   ; ,,
             bne loop
-moveto_r:   pla
+moveto_r:   jsr AdvTimers
+            pla
             tax
             rts
 
@@ -632,7 +627,7 @@ moveto_r:   pla
 RoomName:   jsr IsLight         ; Is the room illuminated?
             bcs sees_name       ; ,,
             jmp ShowNoSee       ; ,,
-sees_name:  ldy #8              ; 8 = desc low byte parameter
+sees_name:  ldy #7              ; 7 = desc low byte parameter
             lda (RM),y          ; A is low byte
             pha                 ; Push low byte to stack
             iny                 ; 7 = high byte parameter
@@ -705,7 +700,7 @@ next_item:  inx                 ; ,,
             jmp next_item       ; Go to the next item
             
             ; Directional display
-DirDisp:    ldy #7              ; Room properties
+DirDisp:    ldy #6              ; Room properties
             lda (RM),y          ; If directions are hidden, skip
             and #HIDE_DIR       ; ,,
             bne ShowScore       ; ,,
@@ -766,7 +761,7 @@ score_r:    rts
 ; Is Light
 ; Is there light in the current room?
 ; Carry set if yes
-IsLight:    ldy #7              ; Get room property
+IsLight:    ldy #6              ; Get room property
             lda (RM),y          ; ,,
             and #IS_DARK        ; Is this a dark room?
             beq room_light      ;   If not return with cary set
@@ -795,8 +790,7 @@ PrintAlt:   sta PATTERN
 ch_end:     cmp #0
             bne loop
 set_print:  lda PATTERN
-            ldy PATTERN+1
-            
+            ldy PATTERN+1       
             ; Fall through to PrintMsg
 
 ; Print Message 1

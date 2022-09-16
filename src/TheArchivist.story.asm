@@ -79,14 +79,17 @@ ConfirmTx:  .asc COL_ALERT,"ok",ED
 ; VerbID - Cross-referenced ID list for verb synonyms
 ; Basic - GO (MovE), LooK (L,EX), GeT (TakE), DroP, InventorY (I)
 ; Game - TALK(6), WIND(7), DIAL(8), SET(2), SWAP(9), BUY(10), CATCH(11)
-;        OPEN(12), PANIC(13)
+;        OPEN(12), PANIC(13), ENTER(14), SCAN(15)
 ; Verb IDs are 1-indexed
 Verb1:      .byte 'G','M','L','L','E','G','T','D','I','I'   ; Basic Verbs
-            .byte 'T','W','D','R','S','B','C','O','P',ED
+            .byte 'T','W','D','R','S','B','C','O','P','E'
+            .byte 'S',ED
 VerbL:      .byte 'O','E','K','L','X','T','E','P','Y','I'   ; Basic Verbs
-            .byte 'K','D','L','D','P','Y','H','N','C'
+            .byte 'K','D','L','D','P','Y','H','N','C','R'
+            .byte 'N'
 VerbID:     .byte  1,  1,  2,  2,  2,  3,  3,  4,  5,  5    ; Basic Verbs
-            .byte  6,  7,  8,  2,  9, 10, 11, 12, 13
+            .byte  6,  7,  8,  2,  9, 10, 11, 12, 13, 14
+            .byte 15
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ROOMS
@@ -101,38 +104,52 @@ VerbID:     .byte  1,  1,  2,  2,  2,  3,  3,  4,  5,  5    ; Basic Verbs
 ;      Bit 1 - Direction Display is suppressed
 ; Room IDs are 1-indexed
 Rooms:      ; Main Facility (1-3)
-            ;     D, U, E, W, S, N, ActID, RmProp, DescL, DescH
-            .byte 2, 0, 0, 0, 0, 0, 0, 0, <rIntake,>rIntake
-            .byte 0, 1, 3, 0, 0, 0, 0, 0, <rOffice,>rOffice
-            .byte 0, 0, 0, 2, 0, 0, 2, 0, <rPlaza,>rPlaza
+            ;     D, U, E, W, S, N, RmProp, DescL, DescH
+            .byte 2, 0, 0, 0, 0, 0, 0, <rIntake,>rIntake
+            .byte 0, 1, 3, 0, 0, 0, 0, <rOffice,>rOffice
+            .byte 0, 0, 0, 2, 0, 0, 0, <rPlaza,>rPlaza
             
             ; Graff House, 1776 (4-8)
-            ;     D, U, E, W, S, N, ActID, RmProp, DescL, DescH
-            .byte 0, 0, 5, 0, 0, 0, 0, 0, <rCorner,>rCorner
-            .byte 0, 7, 0, 4, 0, 0, 0, 0, <rFoyer,>rFoyer
-            .byte 0, 0, 0, 0, 0, 7, 0, 0, <rJeffRoom,>rJeffRoom
-            .byte 5, 0, 0, 0, 6, 8, 0, 0, <rLanding,>rLanding
-            .byte 0, 0, 0, 0, 7, 0, 0, 0, <rJeffBed,>rJeffBed
+            ;     D, U, E, W, S, N, RmProp, DescL, DescH
+            .byte 0, 0, 5, 0, 0, 0, 0, <rCorner,>rCorner
+            .byte 0, 7, 0, 4, 0, 0, 0, <rFoyer,>rFoyer
+            .byte 0, 0, 0, 0, 0, 7, 0, <rJeffRoom,>rJeffRoom
+            .byte 5, 0, 0, 0, 6, 8, 0, <rLanding,>rLanding
+            .byte 0, 0, 0, 0, 7, 0, 0, <rJeffBed,>rJeffBed
             
             ; Navin Field, 1934 (9-15)
-            ;     D, U, E, W, S, N, ActID, RmProp, DescL, DescH
-            .byte 0, 0, 0, 0, 0,14, 0,  0, <rTBooth,>rTBooth
-            .byte 0, 0,11,13,14, 0, 18, 0, <rHomeSt,>rHomeSt
-            .byte 0, 0, 0,12,10, 0, 14, 0, <rRightF,>rRightF
-            .byte 0, 0,11,13,10, 0, 18, 0, <rCenterF,>rCenterF
-            .byte 0, 0,12, 0,10, 0, 0,  0, <rLeftF,>rLeftF
-            .byte 0, 0, 0, 0, 9,10, 11, 0, <rCorridor,>rCorridor
-            .byte 0, 0,15,15, 0, 0, 0,  0, <rJail,>rJail
+            ;     D, U, E, W, S, N, RmProp, DescL, DescH
+            .byte 0, 0, 0, 0, 0,14, 0, <rTBooth,>rTBooth
+            .byte 0, 0,11,13,14, 0, 0, <rHomeSt,>rHomeSt
+            .byte 0, 0, 0,12,10, 0, 0, <rRightF,>rRightF
+            .byte 0, 0,11,13,10, 0, 0, <rCenterF,>rCenterF
+            .byte 0, 0,12, 0,10, 0, 0, <rLeftF,>rLeftF
+            .byte 0, 0, 0, 0, 9,10, 0, <rCorridor,>rCorridor
+            .byte 0, 0,15,15, 0, 0, 0, <rJail,>rJail
             
             ; Nefertari's Tomb, 1256BC (16-22)
-            ;     D, U, E, W, S, N, ActID, RmProp, DescL, DescH
-            .byte 0, 0,17, 0, 0, 18, 0, 1, <rAnteCh,>rAnteCh
-            .byte 0, 0, 0,16, 0, 0 , 0, 1, <rSideCh,>rSideCh
-            .byte 19,0, 0, 0, 16,0 , 0, 1, <rRamp,>rRamp
-            .byte 0,18,21,20, 0, 22, 0, 1, <rSarcRm,>rSarcRm
-            .byte 0,0, 19, 0, 0, 0 , 0, 1, <rWAnnex,>rWAnnex
-            .byte 0,0,  0,19, 0, 0 , 0, 1, <rEAnnex,>rEAnnex
-            .byte 0,0,  0, 0,19, 0 , 0, 1, <rResOs,>rResOs
+            ;     D, U, E, W, S, N, RmProp, DescL, DescH
+            .byte 0, 0,17, 0, 0, 18, 1, <rAnteCh,>rAnteCh
+            .byte 0, 0, 0,16, 0, 0 , 1, <rSideCh,>rSideCh
+            .byte 19,0, 0, 0, 16,0 , 1, <rRamp,>rRamp
+            .byte 0,18,21,20, 0, 22, 1, <rSarcRm,>rSarcRm
+            .byte 0,0, 19, 0, 0, 0 , 1, <rWAnnex,>rWAnnex
+            .byte 0,0,  0,19, 0, 0 , 1, <rEAnnex,>rEAnnex
+            .byte 0,0,  0, 0,19, 0 , 1, <rResOs,>rResOs
+            
+            ; Smithsonian Repair Center, 2022 (23-33)
+            ;     D, U, E, W, S, N, RmProp, DescL, DescH
+            .byte 0, 0, 0,24, 0, 0 , 0, <rLobby,>rLobby
+            .byte 0, 0,23, 0, 0, 0 , 0, <rSecurity,>rSecurity
+            .byte 0, 0, 0, 0, 0,24 , 0, <rKeypad,>rKeypad
+            .byte 0,27, 0, 0, 0,25 , 0, <rHallway,>rHallway
+            .byte 26,0,30, 0,28, 0 , 2, <rHallway,>rHallway
+            .byte 0, 0,31, 0, 0,27 , 2, <rHallway,>rHallway
+            .byte 0, 0, 0, 0,30, 0 , 2, <rHallway,>rHallway
+            .byte 0, 0,33,27,31,29 , 2, <rHallway,>rHallway
+            .byte 0, 0,32,28, 0,30 , 2, <rHallway,>rHallway
+            .byte 0, 0, 0,31, 0, 0 , 0, <rRepair,>rRepair
+            .byte 0, 0, 0,30, 0,33 , 2, <rHallway,>rHallway
 
 ; Room Descriptions
 ;     The room name is terminated by ED, after which is the room description,
@@ -226,17 +243,39 @@ rEAnnex:    .asc "eASTERN aNNEX",ED,"a SMALL ROOM OFF ONE",LF
 rResOs:     .asc "rESIDENCE OF oSIRIS",ED,"tHIS CEREMONIAL ROOM",LF
             .asc "WAS PROVIDED TO HELP",LF,"nEFERTARI PASS TO THE",LF
             .asc "AFTERLIFE.",ED
+rLobby:     .asc "lOBBY",ED,"sMITHSONIAN rEPAIR",LF,"cENTER, wASHINGTON,",LF
+            .asc "d.c.",LF,LF,"yOU'VE ALWAYS SHARED",LF,"A KINSHIP WITH THE",LF
+            .asc "sMITHSONIAN STAFF,",LF,"RESPECTING THEM AS",LF
+            .asc "FELLOW ARCHIVISTS.",LF,LF,"bUT SOMETIMES YOU",LF
+            .asc "HAVE TO HEIST THEM.",ED
+rSecurity:  .asc "sECURITY rOOM",ED,"yOU'RE NOT SURE HOW",LF
+            .asc "YOU'LL GET IN.",LF,LF,"tHERE'S A RETINAL",LF,"SCANNER, AND",LF
+            .asc "PERSONNEL ARE",LF,"EXPECTED TO scan",LF,"THEIR EYE. yOU'RE",LF
+            .asc "CONFIDENT YOUR EYES",LF,"AREN'T AUTHORIZED.",ED
+rKeypad:    .asc "sECURITY rOOM 2",ED,"tHIS ROOM HAS A",LF
+            .asc "SECOND AUTH FACTOR.",LF,LF,
+            .asc "tHERE'S A BLUE",LF,"TEN-DIGIT KEYPAD WITH",LF
+            .asc "A TWO-DIGIT DISPLAY,",LF,"ALONG WITH AN enter",LF,"KEY.",ED
+rHallway:   .asc "nONDESCRIPT hALLWAY",ED,"yOU MAY HAVE LOST",LF
+            .asc "YOUR WAY.",LF,LF,"eVERY CORRIDOR LOOKS",LF
+            .asc "FEATURELESS, AND THE",LF,"FLUORESCENT LIGHTS",LF
+            .asc "DISTURB.",ED
+rRepair:    .asc "rEPAIR rOOM",ED,"tHIS IS WHERE THE",LF,"sMITHSONIAN SENDS",LF
+            .asc "EXHIBITS FOR REPAIR.",LF,"a WORKBENCH WITH",LF
+            .asc "MYRIAD TOOLS LINES",LF,"THE WALL.",ED
 
 ; Room Timers
 ; RTimerRm   - The room that causes the timer to start, when entered for the
 ;   first time
-; RTimerInit - The number of turns to which the timer is set when started
+; RTimerInit - The number of turns to which the timer is set when started. If
+;   the value is 1, then the event is triggered immediately upon entering the
+;   room for the first time.
 ; RTimerAct  - The Action ID that's executed when the timer reaches 0
 ;
 ; Memory is allocated to keep track of 64 Room Timers
-RTimerRm:   .asc ED
-RTimerInit: .asc 0
-RTimerAct:  .asc 0 
+RTimerRm:   .asc 3 ,10,11,12,14,24,ED
+RTimerInit: .asc 1 , 1, 1, 1, 1, 1
+RTimerAct:  .asc 2 ,18,14,18,11,32
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ITEMS
@@ -261,24 +300,26 @@ RTimerAct:  .asc 0
 ; Item IDs are 1-indexed
 Item1:      .byte 'C','C','B','R','S','W','1','D','1','I','*','J','B'
             .byte 'T','C','1','G','*','*','*','1','S','P','I','N','P'
-            .byte 'B','F','S',ED
+            .byte 'B','F','S','G','E','2','K','4','G',ED
 ItemL:      .byte 'R','E','S','L','N','H','6','K','1','E','*','N','L'
             .byte 'T','N','4','E','*','*','*','C','S','E','S','E','T'
-            .byte 'T','S','L'
-ItemRoom:   .byte  1 , 1,  2 , 2 , 1 , 0,  1 , 6 , 1 , 1 , 6 , 0 , 0
+            .byte 'T','S','L','M','E','2','D','2','R'
+ItemRoom:   .byte  1 , 1,  2 , 2 , 1 , 0,  1 , 6 , 1 ,24 , 6 , 0 , 0
             .byte  0 , 8,  1 ,13 ,11 , 0,  0 , 1 ,19 ,21 , 0 , 21,20
-            .byte 21 ,20, 20
-ItemProp:   .byte  3 , 3,  3 , 0,  3 , 8,  3 ,$40,  3 ,$88, 7 , 2 ,$40
+            .byte 21 ,20, 20 ,24 , 1 , 1, 25 , 25,32
+ItemProp:   .byte  3 , 3,  3 , 0,  3 , 8,  3 ,$40, 3 ,$88, 7 , 2 ,$40
             .byte  0 , 0,  3 , 1 , 7 , 7,  7 , 3,  2 , 0 ,35 , 0 , 0
-            .byte  0 , 2,$40
+            .byte  0 , 2,$40 , 1 , 0 , 3,  3 , 3,$80
 ItemTxtL:   .byte <iCursor,<iConsole,<iBoss,<iReel,<iQuota,<iWatch,<iYear
             .byte <iDesk,<iYear,<iPhone,0,<iJefferson,<iBall,<iTicket
             .byte <iSixpence,<iYear,<iGlove,0,0,0,<iYear,<iSarc,<iPlaque
             .byte <iIllus,<iNecklace,<iPendant,<iBracelet,<iFigurines,<iSandal
+            .byte <iGum,<iEye,<iYear,<iKeypad,<iLUE,<iGuitar
 ItemTxtH:   .byte >iCursor,>iConsole,>iBoss,>iReel,>iQuota,>iWatch,>iYear
             .byte >iDesk,>iYear,>iPhone,0,>iJefferson,>iBall,>iTicket
             .byte >iSixpence,>iYear,>iGlove,0,0,0,>iYear,>iSarc,>iPlaque
             .byte >iIllus,>iNecklace,>iPendant,>iBracelet,>iFigurines,>iSandal
+            .byte >iGum,>iEye,>iYear,>iKeypad,>iLUE,>iGuitar
 
 ; Item Descriptions
 iCursor:    .asc "cURSOR",ED,"tHE CURSOR LOOKS LIKE",LF
@@ -376,6 +417,18 @@ iFigurines: .asc "sERVANT figurines",ED,"dOZENS OF PAINTED",LF
             .asc "HAND.",ED
 iSandal:    .asc "nEFERTARI'S sandal",ED,"aN INTRICATELY-WOVEN",LF
             .asc "PAPYRUS SANDAL.",LF,"wOMENS' SIZE 9.",ED
+iGum:       .asc "cHEWED gum",ED,"sMELLS LIKE FRESH",LF,"MINT, BUT STILL",LF
+            .asc "PRETTY GROSS.",ED
+iEye:       .asc "hUMAN eye",ED,"hAZEL, BUT STILL",LF,"PRETTY GROSS.",ED
+iLUE:       .asc "42",ED,"tHE ULTIMATE ANSWER.",ED
+iKeypad:    .asc "kEYPAD",ED,"a FADING SIGN SAYS",LF,"'pLEASE enter YOUR",LF
+            .asc "2-DIGIT PASSCODE.'",ED
+iGuitar:    .asc "pRINCE'S guitar",ED,"yELLOW cLOUD gUITAR.",LF,LF
+            .asc "pRINCE HAD THIS",LF,"DISTINCTIVE",LF
+            .asc "INSTRUMENT MADE IN",LF,"1983, AND DONATED IT",LF
+            .asc "TO THE sMITHSONIAN IN",LF,"1993. tHIS IS THE",LF
+            .asc "GUITAR pRINCE USED IN",LF,"THE MOVIE pURPLE",LF
+            .asc "rAIN.",ED
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; STORY ACTIONS
@@ -418,40 +471,42 @@ iSandal:    .asc "nEFERTARI'S sandal",ED,"aN INTRICATELY-WOVEN",LF
 ;
 ; Action IDs are zero-indexed, and the action id $ff (EV) is reserved for
 ; actions triggered by events (timer target, enters-room, score target)
-ActVerb:    .byte 6,7,EV,8,8,3, 3,  6, 9,  9, 9,EV, 8,10,EV,11,11,11
-            .byte EV, 8,12,2,2,2,2,2,2,2
-            .byte 13,ED
+ActVerb:    .byte 6,7,EV,8,8,3, 3,  6, 9,  9, 9,EV, 8,10,EV,11,11,11 ; 0-17
+            .byte EV, 8,12,2,2,2,2,2,2,2                             ; 18-27
+            .byte 13, 8,15,14,EV,ED
 ActItem:    .byte 3,4,0, 7,9,8, 8, 12,10,  4, 0,0 ,16,14, 0,13,13,13
             .byte 0, 21,22,24,24,24,24,24,24,24
-            .byte 0
+            .byte 0, 32,31,34, 0
 ActInRoom:  .byte 0,0,0, 0,0,0, 0,  6, 6,  6, 6,0,  0, 9, 0,11,11,11
             .byte 0,  0, 0,16,17,18,19,20,21,22
-            .byte 0
+            .byte 0,  0,24,25, 0
 ActInvCon:  .byte 0,4,0, 0,0,0, 0,  0,10,  4, 0,0,  0,15, 0, 0,17, 0
             .byte 13, 0, 0,0,0,0,0,0,0,0
-            .byte 0
+            .byte 0,  0,31, 0, 0
 ActRoomCon: .byte 3,0,0, 1,1,11,12, 0,12, 12,12,0 , 1, 0,18,20,19,19
             .byte 0,  1,22,0,0,0,0,0,0,0
-            .byte 0
+            .byte 0,  1, 0, 0, 0
 ActInvExcl: .byte 0,1,0, 0,0,8, 8,  8, 8,  8, 8,14, 0, 0, 0,0,  0, 0
             .byte 0,  0, 0,0,0,0,0,0,0,0
-            .byte 0
+            .byte 0,  0, 0, 0, 0
 ActFrom:    .byte 1,0,0, 0,0,11,1,  1, 10, 4, 1,0 , 0,15,18,1, 17,19
             .byte 0,  0, 1,1,1,1,1,1,1,1
-            .byte 1
+            .byte 1,  0, 0, 0, 1
 ActTo:      .byte 1,1,0, 4,0,12,1,  1, 8,  8, 1,9 , 9,14,19,1, 13,20
             .byte 15,16, 1,1,1,1,1,1,1,1
-            .byte 1
+            .byte 1 ,23,25,26, 1
 ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aJeffOffer,<aJeffAcc,<aJeffAcc,<aJeffDecl
             .byte <aNeedTix,<aX,<aBuyTix,<aBallHit,<aMissed,<aTryCatch,0
             .byte <aToJail,<aX,<aOpSarc,<iIllus,<iIllus,<iIllus,<iIllus
-            .byte <iIllus,<iIllus,<iIllus,<aPanic
+            .byte <iIllus,<iIllus,<iIllus,<aPanic,<aX,<aSec,<aSec
+            .byte <aDrops
 ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aJeffOffer,>aJeffAcc,>aJeffAcc,>aJeffDecl
             .byte >aNeedTix,>aX,>aBuyTix,>aBallHit,>aMissed,>aTryCatch,0
             .byte >aToJail,>aX,>aOpSarc,>iIllus,>iIllus,>iIllus,>iIllus
-            .byte >iIllus,>iIllus,>iIllus,>aPanic
+            .byte >iIllus,>iIllus,>iIllus,>aPanic,>aX,>aSec,>aSec
+            .byte >aDrops
             
 ; Action Results
 aBoss:      .asc "'hAVE A GREAT DAY,",LF,"AND DON'T FORGET YOUR",LF
@@ -463,7 +518,7 @@ aHome:      .asc CLRHOME,"bEING REELED BACK IS",LF,"ALWAYS DISCONCERTING.",LF
             .asc "ONLY A MOMENT AND",LF,"YOU'RE BACK TO YOUR",LF
             .asc "iNTAKE rOOM.",ED
             .asc "yOU DON'T HAVE A",LF,"TEMPORAL REEL.",ED
-aDie:       .asc CRSRUP,CRSRUP,CRSRUP,"tHE bOSS RUSHES TO",LF
+aDie:       .asc "tHE bOSS RUSHES TO",LF
             .asc "TACKLE YOU BUT IT'S",LF,"TOO LATE. yOU NOTICE",LF
             .asc "A MAGNIFICENT FUTURE",LF,"CITYSCAPE FOR ONLY A",LF
             .asc "MOMENT BEFORE THE",LF,"bUBBLE COLLAPSES",LF
@@ -529,3 +584,13 @@ aOpSarc:    .asc "dID YOU MISS THE BIT",LF,"ABOUT THE GRANITE?",LF
             .asc "tHE LID ALONE WEIGHS",LF,"SEVERAL THOUSAND KG,",LF
             .asc "AND IT'S NOT WHAT",LF,"YOU'RE HERE FOR.",ED,ED
 aPanic:     .asc "nOT SURPRISED.",ED,ED
+aSec:       .asc "a GREEN LIGHT BLINKS",LF,"SILENTLY, AND THE",LF
+            .asc "DOOR CLICKS SOFTLY",LF,"OPEN. yOU PASS",LF
+            .asc "THROUGH IT.",ED
+aSec2:      .asc "a RED LIGHT BLINKS.",ED
+aDrops:     .asc "a BALDING YOUNG MAN",LF,"PUSHES PAST YOU. aS",LF
+            .asc "HE DOES, HE DROPS A",LF,"WAD OF GUM INTO THE",LF
+            .asc "WASTEBASKET, THEN",LF,"scanS HIS EYE IN THE",LF
+            .asc "RETINAL SCANNER. tHE",LF,"DOOR CLICKS, AND HE",LF
+            .asc "GOES IN. hIS COAT",LF,"SNAGS THE DOOR HANDLE",LF
+            .asc "AND HIS PHONE FALLS",LF,"ONTO THE FLOOR.",ED
