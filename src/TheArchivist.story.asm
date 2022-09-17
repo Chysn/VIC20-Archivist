@@ -39,14 +39,6 @@ SCORE_ACT   = 2                 ; Action id when score is achieved
 ST_ITEM_L   = 6                 ; Starting Item ID, left hand
 ST_ITEM_R   = 0                 ; Starting Item ID, right hand 
 
-; Clock Configuration
-CLOCK_INIT  = 4                 ; Timer starting value
-CLOCK_DIR   = $04               ; Timer direction ($01 = +1, $ff = -1)
-CLOCK_TGT   = 248               ; Timer target (at which TIMER_ACT happens)
-CLOCK_ACT   = 0                 ; Timer Action ID (when TIMER_TGT is reached)
-CLOCK_TR    = 0                 ; Timer value when triggered
-TIME_OFFSET = 9                 ; Display time offset (e.g., for clocks)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; GAME DATA
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;   
@@ -79,17 +71,18 @@ ConfirmTx:  .asc COL_ALERT,"ok",ED
 ; VerbID - Cross-referenced ID list for verb synonyms
 ; Basic - GO (MovE), LooK (L,EX), GeT (TakE), DroP, InventorY (I)
 ; Game - TALK(6), WIND(7), DIAL(8), SET(2), SWAP(9), BUY(10), CATCH(11)
-;        OPEN(12), PANIC(13), ENTER(14), SCAN(15)
+;        OPEN(12), PANIC(13), ENTER(14), SCAN(15), PLAY(16),
+;        ATTACK/KILL/FIGHT(17)
 ; Verb IDs are 1-indexed
 Verb1:      .byte 'G','M','L','L','E','G','T','D','I','I'   ; Basic Verbs
             .byte 'T','W','D','R','S','B','C','O','P','E'
-            .byte 'S',ED
+            .byte 'S','P','A','K','F',ED
 VerbL:      .byte 'O','E','K','L','X','T','E','P','Y','I'   ; Basic Verbs
             .byte 'K','D','L','D','P','Y','H','N','C','R'
-            .byte 'N'
+            .byte 'N','Y','K','L','T'
 VerbID:     .byte  1,  1,  2,  2,  2,  3,  3,  4,  5,  5    ; Basic Verbs
             .byte  6,  7,  8,  2,  9, 10, 11, 12, 13, 14
-            .byte 15
+            .byte 15, 16, 17, 17, 17
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ROOMS
@@ -137,19 +130,18 @@ Rooms:      ; Main Facility (1-3)
             .byte 0,0,  0,19, 0, 0 , 1, <rEAnnex,>rEAnnex
             .byte 0,0,  0, 0,19, 0 , 1, <rResOs,>rResOs
             
-            ; Smithsonian Repair Center, 2022 (23-33)
+            ; Smithsonian Repair Center, 2022 (23-31)
             ;     D, U, E, W, S, N, RmProp, DescL, DescH
             .byte 0, 0, 0,24, 0, 0 , 0, <rLobby,>rLobby
             .byte 0, 0,23, 0, 0, 0 , 0, <rSecurity,>rSecurity
             .byte 0, 0, 0, 0, 0,24 , 0, <rKeypad,>rKeypad
             .byte 0,27, 0, 0, 0,25 , 0, <rHallway,>rHallway
-            .byte 26,0,30, 0,28, 0 , 2, <rHallway,>rHallway
-            .byte 0, 0,31, 0, 0,27 , 2, <rHallway,>rHallway
-            .byte 0, 0, 0, 0,30, 0 , 2, <rHallway,>rHallway
-            .byte 0, 0,33,27,31,29 , 2, <rHallway,>rHallway
-            .byte 0, 0,32,28, 0,30 , 2, <rHallway,>rHallway
+            .byte 26,0,30, 0,28, 0 , 0, <rHallway,>rHallway
+            .byte 0, 0,31, 0, 0,27 , 0, <rRepair,>rRepair
+            .byte 0, 0, 0, 0,30, 0 , 0, <rRepair,>rRepair
+            .byte 0, 0, 0,27,31,29 , 0, <rHallway,>rHallway
+            .byte 0, 0,32,28, 0,30 , 0, <rHallway,>rHallway
             .byte 0, 0, 0,31, 0, 0 , 0, <rRepair,>rRepair
-            .byte 0, 0, 0,30, 0,33 , 2, <rHallway,>rHallway
 
 ; Room Descriptions
 ;     The room name is terminated by ED, after which is the room description,
@@ -256,26 +248,13 @@ rKeypad:    .asc "sECURITY rOOM 2",ED,"tHIS ROOM HAS A",LF
             .asc "SECOND AUTH FACTOR.",LF,LF,
             .asc "tHERE'S A BLUE",LF,"TEN-DIGIT KEYPAD WITH",LF
             .asc "A TWO-DIGIT DISPLAY,",LF,"ALONG WITH AN enter",LF,"KEY.",ED
-rHallway:   .asc "nONDESCRIPT hALLWAY",ED,"yOU MAY HAVE LOST",LF
-            .asc "YOUR WAY.",LF,LF,"eVERY CORRIDOR LOOKS",LF
+rHallway:   .asc "nONDESCRIPT hALLWAY",ED,"eVERY HALLWAY LOOKS",LF
             .asc "FEATURELESS, AND THE",LF,"FLUORESCENT LIGHTS",LF
             .asc "DISTURB.",ED
-rRepair:    .asc "rEPAIR rOOM",ED,"tHIS IS WHERE THE",LF,"sMITHSONIAN SENDS",LF
-            .asc "EXHIBITS FOR REPAIR.",LF,"a WORKBENCH WITH",LF
-            .asc "MYRIAD TOOLS LINES",LF,"THE WALL.",ED
-
-; Room Timers
-; RTimerRm   - The room that causes the timer to start, when entered for the
-;   first time
-; RTimerInit - The number of turns to which the timer is set when started. If
-;   the value is 1, then the event is triggered immediately upon entering the
-;   room for the first time.
-; RTimerAct  - The Action ID that's executed when the timer reaches 0
-;
-; Memory is allocated to keep track of 64 Room Timers
-RTimerRm:   .asc 3 ,10,11,12,14,24,ED
-RTimerInit: .asc 1 , 1, 1, 1, 1, 1
-RTimerAct:  .asc 2 ,18,14,18,11,32
+rRepair:    .asc "rEPAIR rOOM",ED,"tHIS IS ONE OF THE",LF,"ROOMS WHERE THE",LF
+            .asc "sMITHSONIAN SENDS",LF,"EXHIBITS FOR REPAIR.",LF
+            .asc "a WORKBENCH WITH",LF,"MYRIAD TOOLS LINES",LF
+            .asc "THE WALL.",ED
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ITEMS
@@ -288,8 +267,7 @@ RTimerAct:  .asc 2 ,18,14,18,11,32
 ;     Bit 1 = Is un-moveable (cannot move from its room)
 ;     Bit 2 = Is placeholder (cannot be used as an item)
 ;     Bit 3 = Is timekeeping device (shows number of action attempts) 
-;     Bit 4 = Is trigger for timer (when this item is moved to a room, the
-;             timer starts)
+;     Bit 4 = (Future Expansion)
 ;     Bit 5 = (Future Expansion)
 ;     Bit 6 = Is scored (counts as 1 point when dropped in score room)
 ;     Bit 7 = Is light source (rooms with "is dark" can be seen)
@@ -298,28 +276,34 @@ RTimerAct:  .asc 2 ,18,14,18,11,32
 ;    also terminated by ED)
 ; 
 ; Item IDs are 1-indexed
-Item1:      .byte 'C','C','B','R','S','W','1','D','1','I','*','J','B'
-            .byte 'T','C','1','G','*','*','*','1','S','P','I','N','P'
-            .byte 'B','F','S','G','E','2','K','4','G',ED
+Item1:      .byte 'C','C','B','R','S','W','1','D','1','I','*','J','B' ; (1-13)
+            .byte 'T','C','1','G','*','*','*','1','S','P','I','N','P' ; (14-26)
+            .byte 'B','F','S','G','E','2','K','4','G','W','W','W','T' ; (27-39)
+            .byte 'T','T','K',ED
 ItemL:      .byte 'R','E','S','L','N','H','6','K','1','E','*','N','L'
             .byte 'T','N','4','E','*','*','*','C','S','E','S','E','T'
-            .byte 'T','S','L','M','E','2','D','2','R'
+            .byte 'T','S','L','M','E','2','D','2','R','H','H','H','S'
+            .byte 'S','S','D'
 ItemRoom:   .byte  1 , 1,  2 , 2 , 1 , 0,  1 , 6 , 1 ,24 , 6 , 0 , 0
             .byte  0 , 8,  1 ,13 ,11 , 0,  0 , 1 ,19 ,21 , 0 , 21,20
-            .byte 21 ,20, 20 ,24 , 1 , 1, 25 , 25,32
+            .byte 21 ,20, 20 ,24 , 1 , 1, 25 , 25,32 ,29 ,28 , 32,29
+            .byte 28 ,32,  9
 ItemProp:   .byte  3 , 3,  3 , 0,  3 , 8,  3 ,$40, 3 ,$88, 7 , 2 ,$40
             .byte  0 , 0,  3 , 1 , 7 , 7,  7 , 3,  2 , 0 ,35 , 0 , 0
-            .byte  0 , 2,$40 , 1 , 0 , 3,  3 , 3,$80
+            .byte  0 , 2,$40 , 1 , 0 , 3,  3 , 3,$40 , 3 , 3 , 3 , 0
+            .byte  0 , 0,  3
 ItemTxtL:   .byte <iCursor,<iConsole,<iBoss,<iReel,<iQuota,<iWatch,<iYear
             .byte <iDesk,<iYear,<iPhone,0,<iJefferson,<iBall,<iTicket
             .byte <iSixpence,<iYear,<iGlove,0,0,0,<iYear,<iSarc,<iPlaque
             .byte <iIllus,<iNecklace,<iPendant,<iBracelet,<iFigurines,<iSandal
-            .byte <iGum,<iEye,<iYear,<iKeypad,<iLUE,<iGuitar
+            .byte <iGum,<iEye,<iYear,<iKeypad,<iLUE,<iGuitar,<iWB,<iWB,<iWB
+            .byte <iT,<iT,<iT,<iKid
 ItemTxtH:   .byte >iCursor,>iConsole,>iBoss,>iReel,>iQuota,>iWatch,>iYear
             .byte >iDesk,>iYear,>iPhone,0,>iJefferson,>iBall,>iTicket
             .byte >iSixpence,>iYear,>iGlove,0,0,0,>iYear,>iSarc,>iPlaque
             .byte >iIllus,>iNecklace,>iPendant,>iBracelet,>iFigurines,>iSandal
-            .byte >iGum,>iEye,>iYear,>iKeypad,>iLUE,>iGuitar
+            .byte >iGum,>iEye,>iYear,>iKeypad,>iLUE,>iGuitar,>iWB,>iWB,>iWB
+            .byte >iT,>iT,>iT,>iKid
 
 ; Item Descriptions
 iCursor:    .asc "cURSOR",ED,"tHE CURSOR LOOKS LIKE",LF
@@ -355,9 +339,7 @@ iQuota:     .asc "sCREEN",ED
             .asc "    ",221,    "  * 2022   ",221,LF
             .asc "    ",221,    "  * 3449   ",221,LF
             .asc "    ",221,    "  * 1255bc ",221,LF
-            .asc "    ",173,192,192,192,192,192,192,192,192,192,192,192,189,LF
-            .asc "cHERNOV COLLECTS",LF,"YOUR iNTAKE AT 17:00.",LF,
-            .asc "yOU JUST NEED TO drop",LF,"ASSETS IN THIS ROOM.",ED
+            .asc "    ",173,192,192,192,192,192,192,192,192,192,192,192,189,ED
 iWatch:     .asc "pOCKET watch",ED,"18TH cENTURY. a GIFT",LF
             .asc "FROM dAD. oRNATE.",LF,LF,"yOU USUALLY LEAVE IT",LF
             .asc "IN THE iNTAKE rOOM.",LF,ED
@@ -429,6 +411,14 @@ iGuitar:    .asc "pRINCE'S guitar",ED,"yELLOW cLOUD gUITAR.",LF,LF
             .asc "TO THE sMITHSONIAN IN",LF,"1993. tHIS IS THE",LF
             .asc "GUITAR pRINCE USED IN",LF,"THE MOVIE pURPLE",LF
             .asc "rAIN.",ED
+iWB:        .asc "wORKBENCH",ED,"tHE WORKBENCH IS",LF,"LARGE AND TIDY.",ED
+iT:         .asc "tOOLS",ED,"tHE TOOL KIT CONTAINS",LF,"ALL THE USUAL STUFF,",LF
+            .asc "NONE OF WHICH YOU",LF,"NEED.",ED
+iKid:       .asc "kID",ED,"hE'S ABOUT 15 YEARS",LF,"OLD WITH SHORT RED",LF
+            .asc "HAIR, WEARING A",LF,"tIGERS CAP AND A",LF,"BUTTONED LONG-",LF
+            .asc "SLEEVE SHIRT. hE'S",LF,"PRETTY FRIENDLY, BUT",LF
+            .asc "HE OBVIOUSLY DOESN'T",LF,"GET YOUR ARCHAIC",LF
+            .asc "APPEARANCE.",ED
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; STORY ACTIONS
@@ -473,44 +463,46 @@ iGuitar:    .asc "pRINCE'S guitar",ED,"yELLOW cLOUD gUITAR.",LF,LF
 ; actions triggered by events (timer target, enters-room, score target)
 ActVerb:    .byte 6,7,EV,8,8,3, 3,  6, 9,  9, 9,EV, 8,10,EV,11,11,11 ; 0-17
             .byte EV, 8,12,2,2,2,2,2,2,2                             ; 18-27
-            .byte 13, 8,15,14,EV,ED
+            .byte 13, 8,15,14,14,EV,16, 6,10,17,EV,ED
 ActItem:    .byte 3,4,0, 7,9,8, 8, 12,10,  4, 0,0 ,16,14, 0,13,13,13
             .byte 0, 21,22,24,24,24,24,24,24,24
-            .byte 0, 32,31,34, 0
+            .byte 0, 32,31,34, 0, 0,35,42, 8, 0, 0
 ActInRoom:  .byte 0,0,0, 0,0,0, 0,  6, 6,  6, 6,0,  0, 9, 0,11,11,11
             .byte 0,  0, 0,16,17,18,19,20,21,22
-            .byte 0,  0,24,25, 0
+            .byte 0,  0,24,25,25, 0, 0, 9, 6, 0, 0
 ActInvCon:  .byte 0,4,0, 0,0,0, 0,  0,10,  4, 0,0,  0,15, 0, 0,17, 0
             .byte 13, 0, 0,0,0,0,0,0,0,0
-            .byte 0,  0,31, 0, 0
+            .byte 0,  0,31, 0, 0, 0,35,14, 0, 0, 0
 ActRoomCon: .byte 3,0,0, 1,1,11,12, 0,12, 12,12,0 , 1, 0,18,20,19,19
             .byte 0,  1,22,0,0,0,0,0,0,0
-            .byte 0,  1, 0, 0, 0
+            .byte 0,  1, 0, 0, 1, 0, 0, 0, 0, 0, 0
 ActInvExcl: .byte 0,1,0, 0,0,8, 8,  8, 8,  8, 8,14, 0, 0, 0,0,  0, 0
             .byte 0,  0, 0,0,0,0,0,0,0,0
-            .byte 0,  0, 0, 0, 0
+            .byte 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 ActFrom:    .byte 1,0,0, 0,0,11,1,  1, 10, 4, 1,0 , 0,15,18,1, 17,19
             .byte 0,  0, 1,1,1,1,1,1,1,1
-            .byte 1,  0, 0, 0, 1
+            .byte 1,  0, 0, 0, 1, 1, 1, 1, 1, 1, 0
 ActTo:      .byte 1,1,0, 4,0,12,1,  1, 8,  8, 1,9 , 9,14,19,1, 13,20
             .byte 15,16, 1,1,1,1,1,1,1,1
-            .byte 1 ,23,25,26, 1
+            .byte 1 ,23,25,26, 1, 1, 1, 1, 1, 1, 0
 ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aJeffOffer,<aJeffAcc,<aJeffAcc,<aJeffDecl
             .byte <aNeedTix,<aX,<aBuyTix,<aBallHit,<aMissed,<aTryCatch,0
             .byte <aToJail,<aX,<aOpSarc,<iIllus,<iIllus,<iIllus,<iIllus
             .byte <iIllus,<iIllus,<iIllus,<aPanic,<aX,<aSec,<aSec
-            .byte <aDrops
+            .byte <aSec,<aDrops,<aRiff,<aTKid,<aBuyDesk,<aViolence,<aEOB
 ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aJeffOffer,>aJeffAcc,>aJeffAcc,>aJeffDecl
             .byte >aNeedTix,>aX,>aBuyTix,>aBallHit,>aMissed,>aTryCatch,0
             .byte >aToJail,>aX,>aOpSarc,>iIllus,>iIllus,>iIllus,>iIllus
             .byte >iIllus,>iIllus,>iIllus,>aPanic,>aX,>aSec,>aSec
-            .byte >aDrops
+            .byte >aSec,>aDrops,>aRiff,>aTKid,>aBuyDesk,>aViolence,>aEOB
             
 ; Action Results
-aBoss:      .asc "'hAVE A GREAT DAY,",LF,"AND DON'T FORGET YOUR",LF
-            .asc "REEL!'",ED,"sHE'S NOT HERE.",ED
+aBoss:      .asc "'hAVE A GREAT DAY.",LF,LF,"'cHERNOV COLLECTS",LF
+            .asc "YOUR iNTAKE AT 17:00.",LF,"yOU JUST NEED TO drop",LF,
+            .asc "ASSETS UPSTAIRS.",LF,LF,"'AND DON'T FORGET",LF
+            .asc "YOUR REEL!'",ED,"sHE'S NOT HERE.",ED
 aHome:      .asc CLRHOME,"bEING REELED BACK IS",LF,"ALWAYS DISCONCERTING.",LF
             .asc "iT'S LIKE RIDING A",LF,"ROLLER COASTER WHILE",LF
             .asc "WEARING A vr HEADSET",LF,"OF A DIFFERENT ROLLER",LF
@@ -587,10 +579,48 @@ aPanic:     .asc "nOT SURPRISED.",ED,ED
 aSec:       .asc "a GREEN LIGHT BLINKS",LF,"SILENTLY, AND THE",LF
             .asc "DOOR CLICKS SOFTLY",LF,"OPEN. yOU PASS",LF
             .asc "THROUGH IT.",ED
-aSec2:      .asc "a RED LIGHT BLINKS.",ED
+            .asc "a RED LIGHT BLINKS.",ED
 aDrops:     .asc "a BALDING YOUNG MAN",LF,"PUSHES PAST YOU. aS",LF
             .asc "HE DOES, HE DROPS A",LF,"WAD OF GUM INTO THE",LF
             .asc "WASTEBASKET, THEN",LF,"scanS HIS EYE IN THE",LF
             .asc "RETINAL SCANNER. tHE",LF,"DOOR CLICKS, AND HE",LF
             .asc "GOES IN. hIS COAT",LF,"SNAGS THE DOOR HANDLE",LF
-            .asc "AND HIS PHONE FALLS",LF,"ONTO THE FLOOR.",ED
+            .asc "AND HIS IpHONE FALLS",LF,"ONTO THE FLOOR.",ED,ED
+aRiff:      .asc "yOU'RE NO pAGANINI,",LF,"BUT YOU CAN SHRED",LF
+            .asc "LIKE IT'S 6199.",ED,"yOU HAVE NO GUITAR.",ED
+aTKid:      .asc "'eNJOY THE",LF,"GAME!'",ED,"'bAMBINO COULD",LF
+            .asc "HIT 700 TODAY. bETTER",LF,"buy YOUR TICKET,",LF
+            .asc "WE'RE ALMOST SOLD",LF,"OUT!'",ED
+aBuyDesk:   .asc "jEFFERSON SCOFFS,",LF,"'wHAT AN ABSURD",LF
+            .asc "NOTION.'",ED,"jUST take IT!",ED
+aViolence:  .asc "tHAT'S A SET OF",LF,"SKILLS THAT... yOU",LF
+            .asc "WOULD NOT FARE WELL.",ED,ED
+aEOB:       .asc "17:00. qUITTING TIME!",LF,"yOU DID NOT QUITE",LF
+            .asc "MAKE QUOTA TODAY, SO",LF,"NO BONUS FOR YOU.",LF,LF
+            .asc "YOU HEAD HOME TO",LF,"CONTEMPLATE YOUR TIME",LF
+            .asc "MANAGEMENT SKILLS.",ED,ED
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; TIMERS
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;            
+; TimerRoom  - The room that causes the timer to start, when entered.
+; TimerItem  - The item that causes the timer to start, when moved via action.
+; TimerInit  - The number of turns to which the timer is set when started. If
+;              the value is 1, then the action is triggered immediately upon 
+;              entering the room.
+; TimerAct   - The Action ID that's executed when the timer reaches 0
+; TimerSeen  - Is the timer started the FIRST time entering the room (0)? Or
+;              SUBSEQUENT times entering the room (1)? For ALL times, use
+;              two Room Timers, with 0 and 1.
+;
+; Memory is allocated to keep track of 128 Timers
+TimerInit:  .asc 2,  1 , 1, 1, 1, 1, 1, 1, 1,ED
+TimerRoom:  .asc 1,  3 ,10,12,10,12,11,14,24
+TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0
+TimerAct:   .asc 48,18,18,18,18,14,11,33
+TimerSeen:  .asc 0,  0, 0, 1, 1, 0, 0, 0
+TimerDir:   .asc $02 ; Timer 0 direction ($01 = +1, $ff = -1)
+TimerTgt:   .asc 240 ; Timer 0 target (at which action happens)
+TimerOffst: .asc 13  ; Display time offset for Timer 0
+        ; 
+

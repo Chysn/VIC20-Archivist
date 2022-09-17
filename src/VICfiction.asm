@@ -32,13 +32,11 @@ ACT_FAILURE = $a8               ; At least one action failed
 TEMP        = $a9               ; Temporary values (3 bytes)
 FROM_ID     = $ac               ; From ID during transform
 TO_ID       = $ad               ; To ID during transform
-CLOCK       = $ae               ; Timer (down/up, item-triggered)
-CLOCK2      = $af               ; Timer 2 (countdown, room-triggered)
 RM          = $b0               ; Room address (2 bytes)
 SCORE       = $b2               ; Score (number of scored items in SCORE_RM)
 BUFFER      = $0220             ; Input buffer
 SEEN_ROOMS  = $1c00             ; Marked as 1 when entered
-ROOM_TIMERS = $1c80             ; Room timer countdown values
+TIMERS      = $1c80             ; Room timer countdown values
 ITEM_ROOMS  = $1d00             ; RAM storage for item rooms
 
 ; Operating System Memory Locations
@@ -74,9 +72,7 @@ INV_CMD     = 5                 ;               - INVENTORY
 IS_INVIS    = $01               ; Item Property - Invisible
 IS_UNMOVE   = $02               ;               - Unmoveable
 IS_PLHOLDER = $04               ;               - Placeholder
-IS_CLOCK    = $08               ;               - Timer Display
-IS_TRIGGER  = $10               ;               - Timer Trigger
-IS_1USE     = $20               ;               - Single-Use
+IS_CLOCK    = $08               ;               - Clock display
 IS_SCORED   = $40               ;               - Is scored
 IS_LIGHT    = $80               ;               - Light source
 IS_DARK     = $01               ; Room Property - Darkened
@@ -115,28 +111,25 @@ NewStory:   bit VIA1PA1         ; Reset NMI
             stx INVENTORY       ; ,,
             ldx #ST_ITEM_R      ; ,,
             stx INVENTORY+1     ; ,,
-            ldx #CLOCK_INIT     ; Initialize timer
-            stx CLOCK           ; ,,            
-            lda #1              ; Initialize starting room id
-            jsr MoveTo          ; ,,
             ldx #0              ; Init for score and for item location copy
             stx SCORE           ; Initialize score
-            stx CLOCK2          ; Clear Timer 2
             sty KBSIZE          ; Clear keyboard buffer
 -loop:      inx                 ; Copy initial room location data to     
             lda ItemRoom-1,x    ;   RAM, so it can be updated as items are
             sta ITEM_ROOMS-1,x  ;   moved around
             lda Item1-1,x       ; Check for last item
             bne loop            ;   If not the last item, keep going
-            ldx #$7f            ; Clear the Seen Rooms list, which is used
-            lda #0              ;   to show room details on first entry, then
--loop:      sta SEEN_ROOMS,x    ;   suppress for subsequent entries
-            dex                 ;   ,,
+            ldx #$00            ; Clear both seen rooms (128 bytes) and
+            lda #0              ;   timers (128 bytes)
+-loop:      sta SEEN_ROOMS,x    ;   ,,
+            inx                 ;   ,,
             bne loop            ;   ,,
-            cli                 ; Clear SEI from ROM hardware vector
             lda #<Intro         ; Show intro
             ldy #>Intro         ; ,,
-            jsr PrintMsg        ; ,,            
+            jsr PrintMsg        ; ,,
+            lda #1              ; Initialize starting room
+            jsr MoveTo          ;   ,,
+            inc SEEN_ROOMS      ;   and mark as seen
             jmp EntryPt         ; Show room name before game starts
                  
 ; Verb Not Found
@@ -153,7 +146,10 @@ ShowErr:    lda #<NoVerbTx      ; Show the error
             ; Fall through to Main
  
 ; Main Routine      
-Main:       lda #COL_INPUT      ; Set the color
+Main:       lda #0              ; Clear the action success and failure
+            sta ACT_SUCCESS     ;   flags
+            sta ACT_FAILURE     ;   ,,
+            lda #COL_INPUT      ; Set the color
             jsr CHROUT          ; ,,
             ldx #0              ; X is buffer index
             sta BUFFER          ; Clear the buffer
@@ -184,10 +180,7 @@ Transcribe: ldx #0              ; Buffer index
 ; Process Command
 ; Start with the Action Engine. Look through the Action Database for 
 ; matching commands and execute them.            
-Process:    lda #0              ; Clear the action success and failure
-            sta ACT_SUCCESS     ;   flags
-            sta ACT_FAILURE     ;   ,,
-            ldx #$ff            ; Look for actions for this command's verb
+Process:    ldx #$ff            ; Look for actions for this command's verb
 next_act:   inx                 ; ,,
             lda ActVerb,x       ; ,,
             bne have_verb       ; After story actions
@@ -214,7 +207,9 @@ do_event:   lda #0              ; Clear success and failure flags for use
             sta ACT_SUCCESS     ;   by caller
             sta ACT_FAILURE     ;   ,,
             ; Fall through to EvalAction
-            
+
+; Evaluate Action
+; X is the Action ID            
 EvalAction: jsr NormCol         ; Messages will be normal color
             lda ActInvCon,x     ; Is there an inventory item condition?
             beq inv_ok          ;   If not, it's unconditional
@@ -259,12 +254,25 @@ is_from:    sta FROM_ID         ; Store the From ID temporarily
             ldy FROM_ID         ; If To=0 then move the item in From ID to
             lda CURR_ROOM       ;   the current room
             sta ITEM_ROOMS-1,y  ;   ,,
-            lda ItemProp-1,y    ; If an item moved to the current room is
-            and #IS_TRIGGER     ;   a trigger, then set the timer
-            beq not_trig        ;   ,,
-            lda #CLOCK_TR       ;   ,,
-            sta CLOCK           ;   ,,
-not_trig:   rts                 ; Finish processing this action
+            
+            sty TEMP            ; TEMP is the Item ID
+            
+            ldy #0              ; X = Timer ID
+-loop:      lda TimerInit,y     ; If TimerInit is 0, that's the end of the
+            beq timer_done      ;   timers
+            lda TimerItem,y     ; Is this an item timer?
+            cmp TEMP            ; Is this a timer for this item?
+            bne next_timer      ;   If not, iterate to next timer
+            lda TimerInit,y     ;   If so, initialize the timer
+            sta TIMERS,y        ;   ,,
+next_timer: iny                 ; Get next
+            bne loop            ; ,,            
+;            lda ItemProp-1,y    ; If an item moved to the current room is
+;            and #IS_TRIGGER     ;   a trigger, then set the timer
+;            beq not_trig        ;   ,,
+;            lda #CLOCK_TR       ;   ,,
+;            sta CLOCK           ;   ,,
+timer_done: rts                 ; Finish processing this action
 xform:      sta TO_ID           ; Transform - Put To where From is
             cmp FROM_ID         ;   If from and to are the same, no transform
             beq eval_r          ;   ,,
@@ -379,8 +387,8 @@ in_room:    tax                 ; X = specified Item ID
             lda ItemProp-1,x    ; If this object is a timer, show its current
             and #IS_CLOCK       ;   value
             beq look_r          ;   ,,
-            ldx #TIME_OFFSET    ; X is the number of "hours" in the display    
-            lda CLOCK           ; Get the timer value
+            ldx TimerOffst      ; X is the number of "hours" in the display    
+            lda TIMERS          ; Get the timer value
 sub_hour:   cmp #60             ; Divide by 60
             bcc lt_hour         ; ,,
             sec                 ; ,,
@@ -572,15 +580,23 @@ GetItemID:  ldy #0              ; Item index
             sty ITEM_ID         ; Default (unfound) Item ID
 -loop:      iny                 ; Advance the index
             lda Item1-1,y       ; Get the first character of this item
-            beq itemid_r        ; If end of list, return with ItemID at 0
+            beq ch_ph           ; If end of list, return with ItemID at 0
             cmp PATTERN         ; Does the first character match?
             bne loop            ;   If not, try the next item
             lda ItemL-1,y       ; If so, does the second character match?
             cmp PATTERN+1       ;   ,,
             bne loop            ;   If not, try the next item
+            sty ITEM_ID         ; Store Item ID provisionally
+            tya                 ; Is the item with the found name in the
+            jsr ItemInRm        ;   player's current room?
+            bcc loop            ;   If not, continue
+            sty ITEM_ID         ; Store the specific Item ID if found in room
+ch_ph:      ldy ITEM_ID         ; Get the Item ID, if any 
+            beq itemid_r        ; ,,
             lda ItemProp-1,y    ; If the item is a placeholder, it will not
             and #IS_PLHOLDER    ;   be used as an Item ID in a command
-            bne loop            ;   ,,
+            beq itemid_r        ;   ,,
+            ldy #0
             sty ITEM_ID         ; Item has been found. Set ItemID and return
 itemid_r:   rts                 ; ,,
 
@@ -606,15 +622,17 @@ nc1:        dex                 ; ,,
             bne loop            ; Multiply
 ch_room_t:  ldx #$ff            ; Check Room Timers. X is the Room Timer ID
 -loop:      inx                 ; Advance to next ID 
-            lda RTimerRm,x      ; Reached the end of Room Timers?
+            lda TimerInit,x     ; Reached the end of Room Timers?
             beq moveto_r        ;   If so, exit
+            lda TimerRoom,x     ; Get timer's room
             cmp CURR_ROOM       ; Is player in this room?
             bne loop            ;   If not, get next Room Timer
-            ldy CURR_ROOM       ; Has this room been seen?
-            lda SEEN_ROOMS-1,y  ;   ,,
-            bne loop            ;   If so, get the next Room Timer
-            lda RTimerInit,x    ; Initialize the timer countdown
-            sta ROOM_TIMERS,x   ; ,,
+            ldy CURR_ROOM       ; Does the "seen" status of this room match
+            lda SEEN_ROOMS-1,y  ;   the timer's setting?
+            cmp TimerSeen,x     ;   ,,
+            bne loop            ;   If not, get the next Room Timer
+            lda TimerInit,x     ; Initialize the timer countdown
+            sta TIMERS,x        ; ,,
             bne loop
 moveto_r:   jsr AdvTimers
             pla
@@ -642,26 +660,26 @@ sees_name:  ldy #7              ; 7 = desc low byte parameter
 ;   1) The player moves to a new room
 ;   2) At least one story action was successful during a turn
 ;      (Cascaded actions on a single turn advance the timer once)     
-AdvTimers:  lda CLOCK           ; If the timer is 0, then it's not active
-            beq adv_room_t      ;   so check Room Timers
+AdvTimers:  lda TIMERS          ; If the timer is 0, then it's not active
+            beq adv_room_t      ;   so check other Timers
             clc                 ; Add to timer
-            adc #CLOCK_DIR      ;   $01 for +1, $ff for -1
-            sta CLOCK
-            cmp #CLOCK_TGT      ; Has timer hit the target?
+            adc TimerDir        ;   $01 for +1, $ff for -1
+            sta TIMERS
+            cmp TimerTgt        ; Has clock hit the target?
             bne adv_room_t      ;   If not, check Room Timers
-            ldx #CLOCK_ACT      ; Do the specified timeout action
+            ldx TimerAct        ; Do the specified timeout action
             jsr DoEvent         ; ,,
-adv_room_t: ldx #$ff            ; X = Room Timer index
+adv_room_t: ldx #$00            ; X = Room Timer index (Timer 0 is the Clock)
 -loop:      inx                 ; ,,
-            lda RTimerRm,x      ; Does the timer exist?
+            lda TimerInit,x     ; Does the timer exist?
             beq timer_r         ;   If not, at end of timers, exit
-            lda ROOM_TIMERS,x   ; Does the timer have a value?
+            lda TIMERS,x        ; Does the timer have a value?
             beq loop            ;   If not, get next timer
-            dec ROOM_TIMERS,x   ; Decrement the timer
+            dec TIMERS,x        ; Decrement the timer
             bne loop            ; If it hasn't reached 0, get next timer
             txa                 ; Preserve X against event action
             pha                 ; ,,
-            lda RTimerAct,x     ; Get Action ID
+            lda TimerAct,x      ; Get Action ID
             tax
             jsr DoEvent         ; Perform the event
             pla
@@ -669,6 +687,8 @@ adv_room_t: ldx #$ff            ; X = Room Timer index
             jmp loop            ; Get next timer
 timer_r:    rts
 
+; Room Description
+; Show name, description, item list, directional display, and score
 RoomDesc:   jsr IsLight         ; Is the room illuminated?
             bcs sees_desc       ; ,,
             jmp ShowNoSee       ; ,,
