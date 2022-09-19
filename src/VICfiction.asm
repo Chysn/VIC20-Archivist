@@ -30,22 +30,23 @@ ACT_FAILURE = $a8               ; At least one action failed
 TEMP        = $a9               ; Temporary values (3 bytes)
 FROM_ID     = $ac               ; From ID during transform
 TO_ID       = $ad               ; To ID during transform
+GAMEOVER    = $ae               ; Flag if game is over
 RM          = $b0               ; Room address (2 bytes)
-SCORE       = $b2               ; Score (number of scored items in SCORE_RM)
 BUFFER      = $0220             ; Input buffer
 SEEN_ROOMS  = $1c00             ; Marked as 1 when entered (128 bytes)
 INVENTORY   = $1c80             ; Item IDs in Inventory (16 bytes)
 TIMERS      = $1c90             ; Room timer countdown values (112 bytes)
 ITEM_ROOMS  = $1d00             ; RAM storage for item rooms (256 bytes)
+SCORE       = $1dfe             ; Score (number of scored items in SCORE_RM)
 CURR_ROOM   = $1dff             ; Current room
 
 ; Operating System Memory Locations
 CASECT      = $0291             ; Disable Commodore case
 VIC         = $9000             ; VIC chip offset
-VIA1PA1     = $9111             ; VIA NMI Reset
 KBSIZE      = $c6               ; Keyboard buffer size
 
-; NMI Restore
+; NMI
+NMI         = $ff5b             ; Do nothing
 NMINV       = $0318             ; Release NMI vector
 ;-NMINV     = $fffe             ; Development NMI non-vector (uncomment for dev)
 
@@ -73,6 +74,7 @@ LOOK_CMD    = 2                 ;               - LOOK
 GET_CMD     = 3                 ;               - GET
 DROP_CMD    = 4                 ;               - DROP
 INV_CMD     = 5                 ;               - INVENTORY
+WAIT_CMD    = $fe               ;               - WAIT
 IS_INVIS    = $01               ; Item Property - Invisible
 IS_UNMOVE   = $02               ;               - Unmoveable
 IS_PLHOLDER = $04               ;               - Placeholder
@@ -94,37 +96,36 @@ Init:       jsr $fd8d           ; Test RAM, initialize VIC chip
             jsr $fd52           ; Restore default I/O vectors
             jsr $fdf9           ; Initialize I/O registers
             jsr $e518           ; Initialize hardware
-            jsr $c67a           ; Set some BASIC values, mostly $16
-            cli                 ; Clear interrupt flag from ROM jump
-            lda #<NewStory      ; Install the custom NMI (restart)
-            sta NMINV           ; ,, 
-            lda #>NewStory      ; ,,
-            sta NMINV+1         ; ,,            
+            lda #$19            ; Set string descriptor pointer, to avoid
+            sta $16             ;   conflicts with zero page addresses
+            lda #<NMI           ; Install the custom NMI handler, which does
+            sta NMINV           ;   absolutely nothing.
+            lda #>NMI           ;   ,,
+            sta NMINV+1         ;   ,, 
             ; Fall through to New Story
 
 ; New Story
-NewStory:   bit VIA1PA1         ; Reset NMI
-            lda #SCRCOL         ; Set screen color
+NewStory:   lda #SCRCOL         ; Set screen color
             sta VIC+$0f         ; ,,
             lda VIC+$05         ; Set lowercase character set
             ora #$02            ; ,,
             sta VIC+$05         ; ,,
             lda #$80            ; Disable Commodore-Shift
-            sta CASECT          ; ,,
-            ldx #0              ; Init for score and for item location copy
-            stx SCORE           ; Initialize score
+            sta CASECT          ; ,,          
+            ldx #0
             stx KBSIZE          ; Clear keyboard buffer
+            stx GAMEOVER        ; Game is not over
 -loop:      inx                 ; Copy initial room location data to     
             lda ItemRoom-1,x    ;   RAM, so it can be updated as items are
             sta ITEM_ROOMS-1,x  ;   moved around
             lda Item1-1,x       ; Check for last item
             bne loop            ;   If not the last item, keep going
-            ldx #0              ; Clear seen rooms (128 bytes), 
+            ldx #0              ; Clear seen rooms (126 bytes), 
             lda #0              ;   inventory (16 bytes),
 -loop:      sta SEEN_ROOMS,x    ;   and timers (112 bytes)
-            inx                 ;   ,,
+            inx                 ;   and score (1 byte)
             bne loop            ;   ,,
-            ldx #$10            ; Set up starting inventory
+            ldx #$0f            ; Set up starting inventory
 -loop:      lda StartInv,x      ; ,,
             sta INVENTORY,x     ; ,,
             dex                 ; ,,
@@ -139,9 +140,9 @@ NewStory:   bit VIA1PA1         ; Reset NMI
                  
 ; Verb Not Found
 ; Show an error message, then go back for another command 
-Nonsense:   lda BUFFER+2        ; Potentially process a shortcut if
-            beq Main            ;   only one character
-shortcuts:  jmp ShortGo
+NoVerb:     lda BUFFER+1        ; Potentially process a shortcut if
+            bne ShowErr         ;   only one character
+            jmp ShortGo         ; Short form of GO (e.g., N,S,W,E,U,D)
 ShowErr:    lda #<NoVerbTx      ; Show the error
             ldy #>NoVerbTx      ; ,,
             jsr PrintMsg        ; ,,
@@ -154,7 +155,7 @@ Main:       lda #0              ; Clear the action success and failure
             lda #COL_INPUT      ; Set the color
             jsr CHROUT          ; ,,
             ldx #0              ; X is buffer index
-            sta BUFFER          ; Clear the buffer
+            stx BUFFER          ; Clear the buffer
 -loop:      jsr CHRIN           ; KERNAL CHRIN
             cmp #LF             ; Did user press RETURN?
             beq enter           ;   If so, go to end of input
@@ -164,16 +165,17 @@ Main:       lda #0              ; Clear the action success and failure
             cpx #21             ; Prevent buffer overflow
             bcc loop            ; ,,  
 enter:      jsr CHROUT          ; Print the RETURN
-            lda #0              ; Add the line-ending null
+            lda #0              ; Add the line-ending null            
             sta BUFFER,x        ; ,,
-            lda BUFFER
-            beq Main
-            cmp #'?'
-            bne ch_sp
-            jmp System
-ch_sp:      cmp #' '
-            beq Main
-            jsr NormCol         ; Set normal color
+            lda BUFFER          ; Look at the first character for a
+            beq Main            ;   couple things.
+            cmp #'/'            ; If slash, this is a System command
+            bne ch_sp           ; ,,
+            jmp System          ; ,,
+ch_sp:      cmp #' '            ; If space, then the user just hit
+            beq Main            ;   RETURN
+            lda GAMEOVER        ; If game is over, allow only system
+            bne Main            ;   commands
             ; Fall through to Transcribe
 
 ; Transcribe Text Buffer
@@ -181,7 +183,7 @@ ch_sp:      cmp #' '
 Transcribe: ldx #0              ; Buffer index
             jsr GetPattern      ; Find the first two-character pattern
             jsr GetVerbID       ; Use the pattern to get Verb ID from database
-            bcc Nonsense        ; Show an error if verb not found
+            bcc NoVerb          ; Show an error if verb not found
             jsr GetPattern      ; Find the next two-character pattern
             jsr GetItemID       ; Use the pattern to get Item ID from database
             ; Fall through to Process
@@ -252,12 +254,12 @@ do_result:  lda ActFrom,x       ; Now for the result. Get the From ID
             bne is_from         ;   Is there a From ID?
             lda ActTo,x         ; If there's no From ID, is there a To ID?
             bne move_pl         ;   If From=0 and To=ID then move player
-game_over:  jsr Linefeed        ; Show score at the end, if applicable
+game_over:  inc GAMEOVER        ; Flag game as over
+            jsr Linefeed        ; Show score at the end, if applicable
             jsr CheckScore      ; ,,
             lda #<GameOverTx    ; If From=0 and To=0 then game over
             ldy #>GameOverTx    ;   Display the Game Over message...
-            jsr PrintMsg        ;   ,,
-forever:    jmp forever         ; ...Then wait until RESTORE
+            jsr PrintRet        ;   ,,
 move_pl:    jmp MoveTo          ; Set current room specified by To ID
 is_from:    sta FROM_ID         ; Store the From ID temporarily
             lda ActTo,x         ; A = To ID?
@@ -339,11 +341,15 @@ ch_inv:     cmp #INV_CMD        ; Handle INVENTORY
             bne ch_drop         ; ,,
             jmp ShowInv         ; ,,
 ch_drop:    cmp #DROP_CMD       ; Handle DROP
-            bne no_cmd          ; ,,
+            bne ch_z            ; ,,
             jmp DoDrop          ; ,,
+ch_z:       cmp #WAIT_CMD       ; Handle WAIT
+            bne no_cmd          ;   ,,
+            jsr AdvTimers       ;   Only advance timers
+            jmp Confirm         ;   and confirm
 no_cmd:     bit ACT_FAILURE     ; If there was an action failure, then a failure
             bmi basic_r         ;   message was already shown
-            jmp Nonsense        ; Error message if no match
+            jmp NoVerb          ; Error message if no match
 h_timer:    jsr AdvTimers       ; Timer countdown or advance
 basic_r:    jmp Main            ; Return to Main main routine
 
@@ -391,6 +397,7 @@ NotHere:    lda #<NotHereTx     ; If the specified item isn't in the room or
             ldy #>NotHereTx     ;   inventory, show a message and go back
             jmp PrintRet        ;   for another command
 in_room:    tax                 ; X = specified Item ID
+            jsr NormCol         ; Normal color description
             lda ItemTxtH-1,x    ; Show the description of the item
             tay                 ; ,,
             lda ItemTxtL-1,x    ; ,,
@@ -450,7 +457,7 @@ ch_first:   ldx CURR_ROOM       ; Is this the first time this room has been
             bne go_r            ; Already been visitied, so leave
             jsr RoomDesc        ; Show room description
             jmp Main         
-invalid:    jmp ShowErr         ; Like Nonsense, but don't look at shortcuts
+invalid:    jmp ShowErr         ; Like NoVerb  , but don't look at shortcuts
 go_fail:    jsr IsLight         ; Failed to move. If there's light in the room
             bcs sees_path       ;   the player can see that they've moved
             jsr Linefeed        ; If it's dark, simply complain about it
@@ -622,21 +629,7 @@ itemid_r:   rts                 ; ,,
 MoveTo:     sta CURR_ROOM
             txa
             pha
-            lda #<Rooms         ; Set starting room address
-            sta RM              ; ,,
-            lda #>Rooms         ; ,,
-            sta RM+1            ; ,,
-            ldx CURR_ROOM       ; X = room id
-            dex                 ; zero-index it
-            beq ch_room_t       ; if first room, (RM) is already set
--loop:      lda #9              ; Add 9 for each id
-            clc                 ; ,,
-            adc RM              ; ,,
-            sta RM              ; ,,
-            bcc nc1             ; ,,
-            inc RM+1            ; ,,
-nc1:        dex                 ; ,,
-            bne loop            ; Multiply
+            jsr SetRoomAd       ; Set (RM) for room
 ch_room_t:  ldx #$ff            ; Check Room Timers. X is the Room Timer ID
 -loop:      inx                 ; Advance to next ID 
             lda TimerInit,x     ; Reached the end of Room Timers?
@@ -650,10 +643,29 @@ ch_room_t:  ldx #$ff            ; Check Room Timers. X is the Room Timer ID
             bne loop            ;   If not, get the next Room Timer
             lda TimerInit,x     ; Initialize the timer countdown
             sta TIMERS,x        ; ,,
+            bne loop            ; Go back for additional timers
 moveto_r:   jsr AdvTimers
             pla
             tax
             rts
+
+; Set Room Address
+SetRoomAd:  lda #<Rooms         ; Set starting room address
+            sta RM              ; ,,
+            lda #>Rooms         ; ,,
+            sta RM+1            ; ,,
+            ldx CURR_ROOM       ; X = Room ID
+            dex                 ; zero-index it
+            beq set_rm_r        ; if first room, (RM) is already set
+-loop:      lda #9              ; Add 9 for each id
+            clc                 ; ,,
+            adc RM              ; ,,
+            sta RM              ; ,,
+            bcc nc1             ; ,,
+            inc RM+1            ; ,,
+nc1:        dex                 ; ,,
+            bne loop            ; Multiply
+set_rm_r:   rts
 
 ; Set Room Name
 ; Set up A and Y for room description display. This should be followed by
@@ -698,9 +710,6 @@ adv_room_t: ldx #$00            ; X = Timer index (Timer 0 is the Clock)
             lda TimerAct,x      ; Get Action ID
             tax
             jsr DoEvent         ; Perform the event
-            ldx CURR_ROOM       ; If an event was triggered, mark the
-            lda #1              ;   current room as seen to prevent
-            sta SEEN_ROOMS-1,x  ;   a double trigger
             pla
             tax
             jmp loop            ; Get next timer
@@ -866,26 +875,30 @@ System:     lda BUFFER+1
             beq Load
             cmp #"Q"
             beq quit
+            cmp #"H"
+            beq help
             jmp Main
 quit:       jmp NewStory
+help:       lda #<HelpTx
+            ldy #>HelpTx
+            jmp PrintRet
 
-Save:       ldx #1              ; Device number
-            ldy #0              ; Command (none)
-            jsr SETLFS          ; ,,            
-            lda #10             ; Filename is the string "vicfiction"
-            ldx #<VICfiction    ;   ,,
-            ldy #>VICfiction    ;   ,,
-            jsr SETNAM          ;   ,,
-            ldx #<SEEN_ROOMS    ; Low byte start
+Save:       ldx #1              ; DEVICE=1 CASSETTE
+            ldy #0              ; No command
+            jsr SETLFS
+            lda #EON-SaveFile   ; File name length
+            ldx #<SaveFile      ; Set filename
+            ldy #>SaveFile      ; ,,
+            jsr SETNAM          ; ,,
+            ldx #<SEEN_ROOMS    ; Start of data
             stx $c1             ; ,,
-            ldy #>SEEN_ROOMS    ; High byte start
-            sty $c2             ; ,,
-            lda #$c1            ; Set tab
-            iny                 ; 2048 bytes
+            lda #>SEEN_ROOMS    ; ,,
+            sta $c2             ; ,,
+            ldy #>SEEN_ROOMS    ; ,,
+            iny                 ; End of data (+512b)
             iny                 ; ,,
-            iny                 ; ,,
-            iny                 ; ,,
-            jsr SAVE            ; SAVE
+            lda #$c1            ; Tab location
+            jsr SAVE            ; Save
             jsr Linefeed
             jmp Main
             
@@ -896,7 +909,7 @@ Load:       ldx #1              ; Tape device number
             jsr SETNAM          ; ,,
             lda #$00            ; Command for LOAD
             jsr LOAD            ; ,,
+            jsr SetRoomAd       ; Set the (RM) pointer
             jsr Linefeed
             jmp Main
-            
-VICfiction: .asc "VICFICTION",0
+                        

@@ -37,6 +37,9 @@ SCORE_ACT   = 46                ; Action id when score is achieved
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; GAME DATA
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;   
+SaveFile:   .asc "ARCHIVIST.SAV"
+EON:        .asc 0
+
 Directions: .asc 'DUEWSN' ; Compass directions
 ;           .asc 'DUSPAF' ; Maritime directions
 
@@ -45,17 +48,24 @@ Directions: .asc 'DUEWSN' ; Compass directions
 ;            Make sure to pad this to 16 items.
 ; MAX_INV  - A constant specifying the NUMBER of items the player can have,
 ;            NOT the last inventory index.
-StartInv:   .asc 6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+StartInv:   .asc 6,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 MAX_INV     = 3
 
 ; Text - Game Messages, Errors, etc.
 Intro:      .asc CLRHOME,COL_NORM,"yOU ARRIVE AT WORK",LF,"IN THE USUAL WAY, BY"
             .asc LF,"CURSOR. aFTER ALL,",LF,"YOU LIVE IN 1841. yOU",LF
-            .asc "ONLY work IN 6205.",LF,LF,"yOU STRAIGHEN YOUR",LF
+            .asc "ONLY WORK IN 6205.",LF,LF,"yOU STRAIGHEN YOUR",LF
             .asc "GLASSES AND GLANCE AT",LF,"THE JOB SCREEN.",LF,LF
             .asc "dAMN BUSY DAY AHEAD.",LF,LF,
-            .asc 156,"tHE aRCHIVIST",LF,LF,"jASON jUSTIAN 2022",LF,
-            .asc "bEIGE mAZE vic lAB",ED
+            .asc 28,"tHE aRCHIVIST",LF,LF
+            .asc "2022 jASON jUSTIAN",LF
+            .asc "bEIGE mAZE vic lAB",LF,LF
+            .asc COL_NORM,"/h nEED HELP?",ED
+HelpTx:     .asc "bASIC vERBS:",LF,LF,"go(move)    get(take)",LF
+            .asc "look(ex,l)   drop(dp)",LF,"inventory(i)  wait(z)",LF,LF,LF
+            .asc "sYSTEM cOMMANDS:",LF,LF
+            .asc "/s sAVE       /h hELP",LF,"/l lOAD       /q qUIT",LF,LF,LF
+            .asc "BEIGEMAZE.COM/VICFIC",LF,ED
 ScoreTx:    .asc "qUOTA: ",ED
 NoVerbTx:   .asc COL_ALERT,"nO NEED TO DO THAT.",ED
 NoDropTx:   .asc COL_ALERT,"yOU DON'T HAVE THAT.",ED
@@ -75,17 +85,17 @@ ConfirmTx:  .asc COL_ALERT,"ok.",ED
 ; Basic - GO (MovE), LooK (L,EX), GeT (TakE), DroP, InventorY (I)
 ; Game - TALK(6), WIND(7), DIAL(8), SET(2), SWAP(9), BUY(10), CATCH(11)
 ;        OPEN(12), PANIC(13), ENTER(14), SCAN(15), PLAY(16),
-;        ATTACK/KILL/FIGHT(17), CALL(18)
+;        ATTACK/KILL/FIGHT(17), CALL(18), SHOW(2)
 ; Verb IDs are 1-indexed
-Verb1:      .byte 'G','M','L','L','E','G','T','D','I','I'   ; Basic Verbs
+Verb1:      .byte 'G','M','L','L','E','G','T','D','I','I','W','Z'   ; Basic Verbs
             .byte 'T','W','D','R','S','B','C','O','P','E'
-            .byte 'S','P','A','K','F','C',ED
-VerbL:      .byte 'O','E','K','L','X','T','E','P','Y','I'   ; Basic Verbs
+            .byte 'S','P','A','K','F','C','S',ED
+VerbL:      .byte 'O','E','K','L','X','T','E','P','Y','I','T','Z'   ; Basic Verbs
             .byte 'K','D','L','D','P','Y','H','N','C','R'
-            .byte 'N','Y','K','L','T','L'
-VerbID:     .byte  1,  1,  2,  2,  2,  3,  3,  4,  5,  5    ; Basic Verbs
+            .byte 'N','Y','K','L','T','L','W'
+VerbID:     .byte  1,  1,  2,  2,  2,  3,  3,  4,  5,  5, $fe,$fe   ; Basic Verbs
             .byte  6,  7,  8,  2,  9, 10, 11, 12, 13, 14
-            .byte 15, 16, 17, 17, 17, 18
+            .byte 15, 16, 17, 17, 17, 18,  2
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ROOMS
@@ -573,7 +583,7 @@ ActInvCon:  .byte 0,4,0, 0,0,0, 0,  0,10,  4, 0,0,  0,15, 0, 0,17, 0
             .byte 13, 0, 0,0,0,0,0,0,0,0
             .byte 0,  0,31, 0, 0, 0,35,14, 0, 0, 0, 0, 0, 0, 0, 0
             .byte 30,30, 0, 0, 0, 0, 0,0 ,52, 0, 0,10
-ActRoomCon: .byte 3,0,0, 1,1,11,12, 0,12, 12,12,0 , 1, 0,18,20,19,19
+ActRoomCon: .byte 3,0,0, 1,1,11,12, 0,12, 12,12,0 , 1, 0, 0,20,19,19
             .byte 0,  1,22,0,0,0,0,0,0,0
             .byte 0,  1, 0, 0, 1, 0, 0, 0, 0, 0, 0,44, 1, 0, 0, 0
             .byte 51,53, 0,12,48,42, 0,0 , 4, 0, 0, 0
@@ -611,7 +621,7 @@ ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
 ; Action Results
 aBoss:      .asc "'hAVE A GREAT DAY.",LF,LF,"'cAPEK COLLECTS YOUR",LF
             .asc "iNTAKE AT 17:00. yOU",LF,"JUST NEED TO drop",LF,
-            .asc "ASSETS UPSTAIRS.",LF,LF,"'AND DON'T FORGET",LF
+            .asc "ASSETS UPSTAIRS.",LF,LF,"'aND DON'T FORGET",LF
             .asc "YOUR REEL!'",ED,"sHE'S NOT HERE.",ED
 aHome:      .asc CLRHOME,"bEING REELED BACK IS",LF,"ALWAYS DISCONCERTING.",LF
             .asc "iT'S LIKE RIDING A",LF,"ROLLER COASTER WHILE",LF
@@ -666,9 +676,8 @@ aBuyTix:    .asc "'tHAT'S SOME FUNNY",LF,"LOOKIN' MONEY, BUT i",LF
             .asc "GUESS IT SPENDS THE",LF,"SAME. hERE'S YOUR",LF
             .asc "TICKET.'",ED,"'tHESE TICKETS COST",LF
             .asc "money!' tHE BOY SAYS.",ED
-aBallHit:   .asc "yOU HEAR THE CRACK",LF,"OFF rUTH'S BAT AND",LF
-            .asc "SEE THE BALL HEADING",LF,"RIGHT AT YOU. yOU",LF
-            .asc "KNEW EXACTLY WHERE TO",LF,"BE...",ED
+aBallHit:   .asc COL_ALERT,"yOU HEAR THE CRACK",LF,"OF rUTH'S BAT AND",LF
+            .asc "SEE THE BALL FLYING",LF,"TOWARD RIGHT FIELD.",ED
             .asc "tHE GAME GOES ON.",ED
 aMissed:    .asc "tHE MOMENT'S PASSED.",LF,"lET IT GO.",ED,ED
 aTryCatch:  .asc "wITH A SATISFYING",LF,"THUD, THE BALL PLANTS",LF
@@ -732,7 +741,7 @@ aWin:       .asc "tHE bOSS ENTERS THE",LF,"iNTAKE rOOM WITH A",LF
             .asc "ICE CREAM.'",ED,ED
 aAtJeff:    .asc "fOR EXAMPLE, IN LIKE",LF,"TWO SECONDS YOUR FACE",LF
             .asc "IS ON THE HARDWOOD",LF,"FLOOR, AND YOUR ARM",LF
-            .asc "IS PAINFULLY PINNED",LF,"BEHIND YOUR BACK.",LF,LF
+            .asc "IS PINNED PAINFULLY",LF,"BEHIND YOUR BACK.",LF,LF
             .asc "'fIRST BURGLARY, THEN",LF,"THIS? i'M LOSING MY",LF
             .asc "PATIENCE. lET US talk",LF,"LIKE ENLIGHTENED",LF
             .asc "CITIZENS.'",ED,ED
@@ -772,11 +781,11 @@ aCell:      .asc "sEEMS LIKE THERE'S NO",LF,"COVERAGE.",ED,"yOU DON'T HAVE A",LF
 ;              two Room Timers, with 0 and 1.
 ;
 ; Memory is allocated to keep track of 128 Timers
-TimerInit:  .asc 1,  1 , 1, 1, 1, 1, 1, 1, 1, 1, 1, 7,ED
-TimerRoom:  .asc 1,  3 ,10,12,10,12,11,14,23,48,48,48
+TimerInit:  .asc 1,  1 , 1, 1, 1, 1, 4, 1, 1, 1, 1, 7,ED
+TimerRoom:  .asc 1,  3 ,10,12,10,12,10,14,23,48,48,48
 TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 TimerAct:   .asc 38, 2, 18,18,18,18,14,11,33,52,53,54
-TimerSeen:  .asc 0,  0, 0, 1, 1, 0, 0, 0,  0, 1, 1, 1
+TimerSeen:  .asc 0,  0, 0, 1, 1, 0,  0, 0,  0, 1, 1, 1
 TimerDir:   .asc $01 ; Timer 0 direction ($01 = +1, $ff = -1)
 TimerTgt:   .asc 240 ; Timer 0 target (at which action happens)
 TimerOffst: .asc 13  ; Display time offset for Timer 0
