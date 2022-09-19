@@ -25,7 +25,6 @@
 VERB_ID     = $00               ; Verb ID
 ITEM_ID     = $01               ; Item ID
 PATTERN     = $02               ; Pattern (2 bytes) 
-INVENTORY   = $a4               ; Inventory (2 bytes) 
 CURR_ROOM   = $a6               ; Current room
 ACT_SUCCESS = $a7               ; At least one action was successful
 ACT_FAILURE = $a8               ; At least one action failed
@@ -35,9 +34,10 @@ TO_ID       = $ad               ; To ID during transform
 RM          = $b0               ; Room address (2 bytes)
 SCORE       = $b2               ; Score (number of scored items in SCORE_RM)
 BUFFER      = $0220             ; Input buffer
-SEEN_ROOMS  = $1c00             ; Marked as 1 when entered
-TIMERS      = $1c80             ; Room timer countdown values
-ITEM_ROOMS  = $1d00             ; RAM storage for item rooms
+SEEN_ROOMS  = $1c00             ; Marked as 1 when entered (128 bytes)
+INVENTORY   = $1c80             ; Item IDs in Inventory (16 bytes)
+TIMERS      = $1c90             ; Room timer countdown values (112 bytes)
+ITEM_ROOMS  = $1d00             ; RAM storage for item rooms (256 bytes)
 
 ; Operating System Memory Locations
 CASECT      = $0291             ; Disable Commodore case
@@ -107,23 +107,24 @@ NewStory:   bit VIA1PA1         ; Reset NMI
             sta VIC+$05         ; ,,
             lda #$80            ; Disable Commodore-Shift
             sta CASECT          ; ,,
-            ldx #ST_ITEM_L      ; Initialize inventory
-            stx INVENTORY       ; ,,
-            ldx #ST_ITEM_R      ; ,,
-            stx INVENTORY+1     ; ,,
             ldx #0              ; Init for score and for item location copy
             stx SCORE           ; Initialize score
-            sty KBSIZE          ; Clear keyboard buffer
+            stx KBSIZE          ; Clear keyboard buffer
 -loop:      inx                 ; Copy initial room location data to     
             lda ItemRoom-1,x    ;   RAM, so it can be updated as items are
             sta ITEM_ROOMS-1,x  ;   moved around
             lda Item1-1,x       ; Check for last item
             bne loop            ;   If not the last item, keep going
-            ldx #$00            ; Clear both seen rooms (128 bytes) and
-            lda #0              ;   timers (128 bytes)
--loop:      sta SEEN_ROOMS,x    ;   ,,
+            ldx #0              ; Clear seen rooms (128 bytes), 
+            lda #0              ;   inventory (16 bytes),
+-loop:      sta SEEN_ROOMS,x    ;   and timers (112 bytes)
             inx                 ;   ,,
             bne loop            ;   ,,
+            ldx #$10            ; Set up starting inventory
+-loop:      lda StartInv,x      ; ,,
+            sta INVENTORY,x     ; ,,
+            dex                 ; ,,
+            bpl loop            ; ,,
             lda #<Intro         ; Show intro
             ldy #>Intro         ; ,,
             jsr PrintMsg        ; ,,
@@ -243,7 +244,9 @@ do_result:  lda ActFrom,x       ; Now for the result. Get the From ID
             bne is_from         ;   Is there a From ID?
             lda ActTo,x         ; If there's no From ID, is there a To ID?
             bne move_pl         ;   If From=0 and To=ID then move player
-game_over:  lda #<GameOverTx    ; If From=0 and To=0 then game over
+game_over:  jsr Linefeed        ; Show score at the end, if applicable
+            jsr CheckScore      ; ,,
+            lda #<GameOverTx    ; If From=0 and To=0 then game over
             ldy #>GameOverTx    ;   Display the Game Over message...
             jsr PrintMsg        ;   ,,
 forever:    jmp forever         ; ...Then wait until RESTORE
@@ -254,9 +257,7 @@ is_from:    sta FROM_ID         ; Store the From ID temporarily
             ldy FROM_ID         ; If To=0 then move the item in From ID to
             lda CURR_ROOM       ;   the current room
             sta ITEM_ROOMS-1,y  ;   ,,
-            
             sty TEMP            ; TEMP is the Item ID
-            
             ldy #0              ; X = Timer ID
 -loop:      lda TimerInit,y     ; If TimerInit is 0, that's the end of the
             beq timer_done      ;   timers
@@ -267,42 +268,44 @@ is_from:    sta FROM_ID         ; Store the From ID temporarily
             sta TIMERS,y        ;   ,,
 next_timer: iny                 ; Get next
             bne loop            ; ,,            
-;            lda ItemProp-1,y    ; If an item moved to the current room is
-;            and #IS_TRIGGER     ;   a trigger, then set the timer
-;            beq not_trig        ;   ,,
-;            lda #CLOCK_TR       ;   ,,
-;            sta CLOCK           ;   ,,
 timer_done: rts                 ; Finish processing this action
-xform:      sta TO_ID           ; Transform - Put To where From is
+xform:      sta TO_ID
             cmp FROM_ID         ;   If from and to are the same, no transform
             beq eval_r          ;   ,,
-            ldy FROM_ID         ;   Get the From item's current location
+
+            ; If the FROM item is in inventory, replace it with the TO item           
+            ldy #MAX_INV        ; Check if inventory needs to be transformed
+-loop:      dey                 ;   ,,
+            bmi ch_rooms        ;   ,,
+            lda INVENTORY,y     ; Is the item here?
+            cmp FROM_ID         ;   ,, 
+            bne loop            ;   ,, Loop until found            
+            lda TO_ID           ; Yes, perform transformation
+            sta INVENTORY,y     ; ,,
+            sty TEMP            ; Y goes from inventory index to TO ID
+            ldy TO_ID           ; ,,
+            lda ItemProp-1,y    ; If the TO item is a Placeholder, it cannot
+            and #IS_PLHOLDER    ;   be in inventory. In this case, remove the
+            beq rm_from         ;   item from inventory, and leave the
+            lda #0              ;   placeholder where it is.
+            ldy TEMP            ; Y goes back to inventory index
+            sta INVENTORY,y     ;   ,,
+            beq inv_r           ;   ,,
+rm_from:    ldy FROM_ID         ; The FROM item leaves the board
+            lda #0              ; ,,
+            sta INVENTORY,y     ; ,,
+inv_r:      rts                 ; Finish evaluating
+
+            ; Move TO item to where FROM item is and set FROM item to Nowhere
+            ; if the FROM item was not found in inventory
+ch_rooms:   ldy FROM_ID         ;   Get the From item's current location
             lda ITEM_ROOMS-1,y  ;   ,,
             ldy TO_ID           ;   And store it into the To index
             sta ITEM_ROOMS-1,y  ;   ,,
-            ldy FROM_ID         ;   Take the To item out of the system by
+            ldy FROM_ID         ;   Take the From item off the board by
             lda #0              ;     setting its room to 0
             sta ITEM_ROOMS-1,y  ;     ,,
-            lda INVENTORY       ; Is the From item in the left hand?
-            cmp FROM_ID         ;   ,,
-            bne ch_inv2         ;   If not, check the other hand
-            lda TO_ID           ;   Update the item in hand
-            sta INVENTORY       ;   ,,
-            cmp INVENTORY+1     ; If the same thing is in the other hand,
-            bne eval_r          ;   then get rid of it
-            lda #0              ;   ,,
-            sta INVENTORY+1     ;   ,,
-            jmp next_act        ;   Check next action
-ch_inv2:    lda INVENTORY+1     ; Is the From item in the right hand?
-            cmp FROM_ID         ;   ,,
-            bne eval_r          ;   If not, finish evaluation
-            lda TO_ID           ;   If so, switch
-            sta INVENTORY+1     ;   ,,
-            cmp INVENTORY       ; If the same thing is in the other hand
-            bne eval_r          ;   then get rid of it
-            lda #0              ;   ,,
-            sta INVENTORY       ;   ,,
-eval_r:     rts                 ; Finish evaluating
+eval_r:     rts
 
 ; Perform Basic Actions
 ; After the action processing is complete      
@@ -340,11 +343,11 @@ basic_r:    jmp Main            ; Return to Main main routine
 ; Of Item ID
 DoDrop:     lda ITEM_ID         ; If no Item ID was found, show an
             beq unknown         ;   error message
-            ldy #1              ; Y is the hand index
-ch_hand:    lda INVENTORY,y     ; Is the specified item in this hand?
+            ldy #MAX_INV-1      ; Y is the inventory index
+ch_hand:    lda INVENTORY,y     ; Is the specified item here?
             cmp ITEM_ID         ;   ,,
             beq drop_now        ;   If so, drop it
-            dey                 ;   If not, check the other hand
+            dey                 ;   If not, iterate through other inventory
             bpl ch_hand         ;   ,,
 unknown:    lda #<NoDropTx      ; The item was not found in inventory, so
             ldy #>NoDropTx      ;   show the "don't have it" message
@@ -457,20 +460,20 @@ DoGet:      lda ITEM_ID         ; Is there an item to get?
             lda #<HaveItTx      ; If in inventory, show the "already have it"            
             ldy #>HaveItTx      ;   message
             jmp PrintRet        ;   ,,
-ch_in_rm:   jsr ItemInRm        ; If the item is not available to get, then
+ch_in_rm:   tax                 ; X = Item ID
+            jsr ItemInRm        ; If the item is not available to get, then
             bcc get_fail        ;   say it's not here
-            tax                 ; X = Item ID
             lda ItemProp-1,x    ; Is this an un-moveable item?
             and #IS_UNMOVE      ; ,,
             bne unmoving        ; ,,
-            lda INVENTORY       ; Is the left hand available? If so, pick it
-            bne ch_empty        ;   up and store it there
-            stx INVENTORY       ;   ,,
-            jmp got_it          ;   ,,
-ch_empty:   lda INVENTORY+1     ; Otherwise, is the right hand available?
-            bne hands_full      ;   If not, show "hands full" message
-            stx INVENTORY+1     ;   If so, store it there
-got_it:     lda #0              ; Clear the item from the room
+            ldy #MAX_INV        ; Is there a free inventory location for
+-loop:      dey                 ;   this item?
+            bmi inv_full        ;   Inventory is full
+            lda INVENTORY,y     ;   Look at this location
+            bne loop            ;   If occupied, go to next
+            txa                 ; An empty location was found. Store the
+            sta INVENTORY,y     ;   item there
+            lda #0              ; Clear the item from the room
             sta ITEM_ROOMS-1,x  ; ,,
 Confirm:    lda #<ConfirmTx     ; Confirm the pick up
             ldy #>ConfirmTx     ; ,,
@@ -480,15 +483,15 @@ get_fail:   jmp NotHere
 unmoving:   lda #<NoMoveTx
             ldy #>NoMoveTx
             jmp PrintRet
-hands_full: lda #<FullTx
+inv_full:   lda #<FullTx
             ldy #>FullTx
             jmp PrintRet
      
 ; Show Inventory       
 ShowInv:    lda #COL_ITEM       ; Set inventory color
             jsr CHROUT          ; ,,
-            ldy #1              ; Y is the hand index
--loop:      lda INVENTORY,y     ; Look in this hand
+            ldy #MAX_INV-1      ; Y is the inventory location
+-loop:      lda INVENTORY,y     ; Look here
             beq nothing         ; If nothing's in it, iterate
             tax                 ; X is the item index
             sty TEMP            ; Stash Y against print subroutine
@@ -547,26 +550,32 @@ verb_found: lda VerbID-1,y      ; Cross-reference VerbID to handle synonyms
 ; Is Item In Room?
 ; Specify Item ID in A  
 ; Carry set if in room          
-ItemInRm:   tay                 ; Y is the Item ID
+ItemInRm:   sta TEMP            ; Preserve A for caller
+            sty TEMP+1          ; Preserve Y for caller
+            tay                 ; Switch A to index
             lda ITEM_ROOMS-1,y  ; Is the item in the current room?
             cmp CURR_ROOM       ; ,,
             beq yes_in_rm       ; ,,
             tya                 ; Is the item in inventory?
-in_inv:     cmp INVENTORY       ; ,, (left hand)
-            beq yes_in_rm       ; ,,
-            cmp INVENTORY+1     ; ,, (right hand)
-            beq yes_in_rm       ; ,,
-no_in_rm:   tya                 ; Restore A for caller
-            clc                 ; Clear carry (not in room)
-            rts
-yes_in_rm:  tya                 ; Restore A for caller
+in_inv:     ldy #MAX_INV        ; ,,
+-loop:      dey                 ; ,,
+            bmi no_in_rm        ; ,, Reached end, no
+            cmp INVENTORY,y     ; ,,
+            bne loop            ; ,, If yes, fall through to yes_in_rm
+yes_in_rm:  lda TEMP
+            ldy TEMP+1
             sec                 ; Set carry (in room)
+            rts
+no_in_rm:   lda TEMP
+            ldy TEMP+1
+            clc                 ; Clear carry (not in room)
             rts
 
 ; Is Item In Inventory
 ; Specify Item ID in A  
 ; Carry set if in inventory          
-ItemInv:    tay
+ItemInv:    sta TEMP
+            sty TEMP+1
             jmp in_inv
             
 ; Get Item ID
@@ -633,7 +642,9 @@ ch_room_t:  ldx #$ff            ; Check Room Timers. X is the Room Timer ID
             bne loop            ;   If not, get the next Room Timer
             lda TimerInit,x     ; Initialize the timer countdown
             sta TIMERS,x        ; ,,
-            bne loop
+            lda #1              ; Set the room as seen to avoid double-trigger,
+            sta SEEN_ROOMS-1,y  ;   regardless of whether the room was actually
+            bne loop            ;   seen.
 moveto_r:   jsr AdvTimers
             pla
             tax
@@ -695,8 +706,8 @@ RoomDesc:   jsr IsLight         ; Is the room illuminated?
 sees_desc:  jsr NormCol         ; Otherwise look refers to a whole room
             jsr RoomName        ; Get room information
             jsr PrintAlt        ; ,,
-            ldx CURR_ROOM       ; Flag the room as seen
-            lda #1              ; ,,
+            lda #1              ; Mark the room as seen
+            ldx CURR_ROOM       ; ,,
             sta SEEN_ROOMS-1,x  ; ,,
             ; Fall through to ItemDisp
 
@@ -753,7 +764,7 @@ ShowScore:  ldx #0              ; X is the item index
             bne score_r         ; ,,
 -loop:      inx                 ; For each item
             lda Item1-1,x       ;   End of items?
-            beq ch_score        ;   ,,
+            beq CheckScore      ;   ,,
             lda ItemProp-1,x    ;   Is it a scored item?
             and #IS_SCORED      ;   ,,
             beq loop            ;   ,,
@@ -762,7 +773,7 @@ ShowScore:  ldx #0              ; X is the item index
             bne loop            ;   ,,  
             inc SCORE           ; Increment score if it qualifies  
             bne loop          
-ch_score:   ldx SCORE           ; If there's no score, don't display
+CheckScore: ldx SCORE           ; If there's no score, don't display
             beq score_r         ; ,,
             lda #<ScoreTx       ; Print the score text
             ldy #>ScoreTx       ; ,,
@@ -785,15 +796,15 @@ IsLight:    ldy #6              ; Get room property
             lda (RM),y          ; ,,
             and #IS_DARK        ; Is this a dark room?
             beq room_light      ;   If not return with cary set
-            ldy #1              ; Hand index
--loop:      lda INVENTORY,y     ; Does this hand contain a light source?
+            ldy #MAX_INV-1      ; Y = location index
+-loop:      lda INVENTORY,y     ; Does this location contain a light source?
             tax                 ; ,,
             lda ItemProp-1,x    ; ,, Get item property
             and #IS_LIGHT       ; ,,
             bne room_light      ; ,,
-            dey                 ; Check the other hand
+            dey                 ; Check the next location
             bpl loop            ; ,,
-            clc                 ; No hands had a light source, so clear
+            clc                 ; No locations had a light source, so clear
             rts                 ;   carry for darkness
 room_light: sec                 ; The room is well-illuminated, so set
             rts                 ;   carry for light
