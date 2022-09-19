@@ -75,17 +75,17 @@ ConfirmTx:  .asc COL_ALERT,"ok.",ED
 ; Basic - GO (MovE), LooK (L,EX), GeT (TakE), DroP, InventorY (I)
 ; Game - TALK(6), WIND(7), DIAL(8), SET(2), SWAP(9), BUY(10), CATCH(11)
 ;        OPEN(12), PANIC(13), ENTER(14), SCAN(15), PLAY(16),
-;        ATTACK/KILL/FIGHT(17)
+;        ATTACK/KILL/FIGHT(17), CALL(18)
 ; Verb IDs are 1-indexed
 Verb1:      .byte 'G','M','L','L','E','G','T','D','I','I'   ; Basic Verbs
             .byte 'T','W','D','R','S','B','C','O','P','E'
-            .byte 'S','P','A','K','F',ED
+            .byte 'S','P','A','K','F','C',ED
 VerbL:      .byte 'O','E','K','L','X','T','E','P','Y','I'   ; Basic Verbs
             .byte 'K','D','L','D','P','Y','H','N','C','R'
-            .byte 'N','Y','K','L','T'
+            .byte 'N','Y','K','L','T','L'
 VerbID:     .byte  1,  1,  2,  2,  2,  3,  3,  4,  5,  5    ; Basic Verbs
             .byte  6,  7,  8,  2,  9, 10, 11, 12, 13, 14
-            .byte 15, 16, 17, 17, 17
+            .byte 15, 16, 17, 17, 17, 18
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ROOMS
@@ -270,8 +270,8 @@ rLobby:     .asc "lOBBY",ED,"sMITHSONIAN rEPAIR",LF,"cENTER, wASHINGTON,",LF
             .asc "sMITHSONIAN STAFF,",LF,"RESPECTING THEM AS",LF
             .asc "FELLOW ARCHIVISTS.",LF,LF,"bUT SOMETIMES YOU",LF
             .asc "HAVE TO HEIST THEM.",LF,LF
-            .asc "'security' IS TO THE",LF
-            .asc "WEST, aN OPEN CAFE",LF,"TO THE NORTH.",ED
+            .asc "sECURITY IS TO THE",LF
+            .asc "WEST, AN OPEN CAFE",LF,"TO THE NORTH.",ED
 rSecurity:  .asc "sECURITY rOOM",ED,"yOU'RE NOT SURE HOW",LF
             .asc "YOU'LL GET IN.",LF,LF,"tHERE'S A RETINAL",LF,"SCANNER, AND",LF
             .asc "PERSONNEL ARE",LF,"EXPECTED TO scan",LF,"THEIR EYE. yOU'RE",LF
@@ -560,35 +560,35 @@ iHelm:      .asc "vANDE'S helm",ED,"mADE OF PURE",LF,"mERETZKIUM, THE hELM",LF
 ActVerb:    .byte 6,7,EV,8,8,3, 3,  6, 9,  9, 9,EV, 8,10,EV,11,11,11 ; 0-17
             .byte EV, 8,12,2,2,2,2,2,2,2,                            ; 18-27
             .byte 13, 8,15,14,14,EV,16, 6,10,17,EV, 2, 8, 6, 6, 6    ; 28-43
-            .byte 15,14,EV,17,17,17,15,15,EV,EV,EV,ED                                    
+            .byte 15,14,EV,17,17,17,15,15,EV,EV,EV,18,ED                                    
 ActItem:    .byte 3,4,0, 7,9,8, 8, 12,10,  4, 0,0 ,16,14, 0,13,13,13
             .byte 0, 21,22,24,24,24,24,24,24,24
             .byte 0, 32,31,34, 0, 0,35,42, 8, 0, 0,43,45,48,49,50
-            .byte 30,31, 0,12,48,42,54, 0, 0, 0, 0
+            .byte 30,31, 0,12,48,42,54, 0, 0, 0, 0, 0
 ActInRoom:  .byte 0,0,0, 0,0,0, 0,  6, 6,  6, 6,0,  0, 9, 0,11,11,11
             .byte 0,  0, 0,16,17,18,19,20,21,22
             .byte 0,  0,24,25,25, 0, 0, 9, 6, 0, 0,33, 0,48,50,50
-            .byte 50,50, 0, 0, 0, 0,50,50,48,48, 0
+            .byte 50,50, 0, 0, 0, 0,50,50,48,48, 0, 0
 ActInvCon:  .byte 0,4,0, 0,0,0, 0,  0,10,  4, 0,0,  0,15, 0, 0,17, 0
             .byte 13, 0, 0,0,0,0,0,0,0,0
             .byte 0,  0,31, 0, 0, 0,35,14, 0, 0, 0, 0, 0, 0, 0, 0
-            .byte 30,30, 0, 0, 0, 0, 0,0 ,52, 0, 0
+            .byte 30,30, 0, 0, 0, 0, 0,0 ,52, 0, 0,10
 ActRoomCon: .byte 3,0,0, 1,1,11,12, 0,12, 12,12,0 , 1, 0,18,20,19,19
             .byte 0,  1,22,0,0,0,0,0,0,0
             .byte 0,  1, 0, 0, 1, 0, 0, 0, 0, 0, 0,44, 1, 0, 0, 0
-            .byte 51,53, 0,12,48,42, 0,0 , 4, 0, 0
+            .byte 51,53, 0,12,48,42, 0,0 , 4, 0, 0, 0
 ActInvExcl: .byte 0,1,0, 0,0,8, 8,  8, 8,  8, 8,14, 0, 0, 0,0,  0, 0
             .byte 0,  0, 0,0,0,0,0,0,0,0
             .byte 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-            .byte 0,  0, 0, 0, 0, 0, 0,30, 0, 0, 4
+            .byte 0,  0, 0, 0, 0, 0, 0,30, 0, 0, 4, 0
 ActFrom:    .byte 1,0,0, 0,0,11,1,  1, 10, 4, 1,0 , 0,15,18,1, 17,19
             .byte 0,  0, 1,1,1,1,1,1,1,1
             .byte 1,  0, 0, 0, 1, 1, 1, 1, 1, 1, 0,44, 0, 1, 1, 1
-            .byte 51,30, 0, 1, 0, 0, 1,1,  4,55, 0
+            .byte 51,30, 0, 1, 0, 0, 1,1,  4,55, 0, 1
 ActTo:      .byte 1,1,0, 4,0,12,1,  1, 8,  8, 1,9 , 9,14,19,1, 13,20
             .byte 15,16, 1,1,1,1,1,1,1,1
             .byte 1 ,23,25,26, 1, 1, 1, 1, 1, 1, 0,30,34, 1, 1, 1
-            .byte 53,31, 0, 1, 51,15,1,1, 55, 4, 0
+            .byte 53,31, 0, 1, 51,15,1,1, 55, 4, 0, 1
 ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aJeffOffer,<aJeffAcc,<aJeffAcc,<aJeffDecl
             .byte <aNeedTix,<aX,<aBuyTix,<aBallHit,<aMissed,<aTryCatch,0
@@ -597,7 +597,7 @@ ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aSec,<aDrops,<aRiff,<aTBoy,<aBuyDesk,<aViolence,<aEOB
             .byte <aFoundGum,<aX,<aTRebels,<aTMedic,<aTVande,<aPrScan
             .byte <aPrEnter,<aWin,<aAtJeff,<aAtRebels,<aAtBoy,<aScDNA
-            .byte <aPrFail,<aStealHelm,0,<aCaught
+            .byte <aPrFail,<aStealHelm,0,<aCaught,<aCell
 ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aJeffOffer,>aJeffAcc,>aJeffAcc,>aJeffDecl
             .byte >aNeedTix,>aX,>aBuyTix,>aBallHit,>aMissed,>aTryCatch,0
@@ -606,7 +606,7 @@ ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aSec,>aDrops,>aRiff,>aTBoy,>aBuyDesk,>aViolence,>aEOB
             .byte >aFoundGum,>aX,>aTRebels,>aTMedic,>aTVande,>aPrScan
             .byte >aPrEnter,>aWin,>aAtJeff,>aAtRebels,>aAtBoy,>aScDNA
-            .byte >aPrFail,>aStealHelm,0,>aCaught
+            .byte >aPrFail,>aStealHelm,0,>aCaught,>aCell
             
 ; Action Results
 aBoss:      .asc "'hAVE A GREAT DAY.",LF,LF,"'cAPEK COLLECTS YOUR",LF
@@ -755,6 +755,8 @@ aStealHelm: .asc "oNE OF THE REBELS",LF,"SPOTS YOU WITH THE",LF
 aCaught:    .asc "iN THE END, YOU DON'T",LF,"KNOW THE FOREST LIKE",LF
             .asc "THEY DO. tHE REBELS",LF,"SURROUND YOU, AND",LF
             .asc "THAT IS PRETTY MUCH",LF,"THAT.",ED,ED
+aCell:      .asc "sEEMS LIKE THERE'S NO",LF,"COVERAGE.",ED,"yOU DON'T HAVE A",LF
+            .asc "PHONE",ED
             
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; TIMERS

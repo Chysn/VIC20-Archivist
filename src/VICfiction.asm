@@ -25,7 +25,6 @@
 VERB_ID     = $00               ; Verb ID
 ITEM_ID     = $01               ; Item ID
 PATTERN     = $02               ; Pattern (2 bytes) 
-CURR_ROOM   = $a6               ; Current room
 ACT_SUCCESS = $a7               ; At least one action was successful
 ACT_FAILURE = $a8               ; At least one action failed
 TEMP        = $a9               ; Temporary values (3 bytes)
@@ -38,6 +37,7 @@ SEEN_ROOMS  = $1c00             ; Marked as 1 when entered (128 bytes)
 INVENTORY   = $1c80             ; Item IDs in Inventory (16 bytes)
 TIMERS      = $1c90             ; Room timer countdown values (112 bytes)
 ITEM_ROOMS  = $1d00             ; RAM storage for item rooms (256 bytes)
+CURR_ROOM   = $1dff             ; Current room
 
 ; Operating System Memory Locations
 CASECT      = $0291             ; Disable Commodore case
@@ -54,6 +54,10 @@ PRINT       = $cb1e             ; Temporary print
 CHRIN       = $ffcf             ; Get input
 CHROUT      = $ffd2             ; Character out
 PRTFIX      = $ddcd             ; Decimal display routine
+SETLFS      = $ffba             ; Setup logical file
+SETNAM      = $ffbd             ; Setup file name
+SAVE        = $ffd8             ; Save
+LOAD        = $ffd5             ; Load
   
 ; Constants
 SPACE       = $20               ; Space
@@ -135,11 +139,8 @@ NewStory:   bit VIA1PA1         ; Reset NMI
                  
 ; Verb Not Found
 ; Show an error message, then go back for another command 
-Nonsense:   lda BUFFER+1        ; Potentially process a shortcut if
-            bne ShowErr         ;   only one character
-            lda BUFFER          ; If the player just hit RETURN, then
-            cmp #' '            ;   there's no need to show an error
-            beq Main            ;   ,,
+Nonsense:   lda BUFFER+2        ; Potentially process a shortcut if
+            beq Main            ;   only one character
 shortcuts:  jmp ShortGo
 ShowErr:    lda #<NoVerbTx      ; Show the error
             ldy #>NoVerbTx      ; ,,
@@ -165,6 +166,13 @@ Main:       lda #0              ; Clear the action success and failure
 enter:      jsr CHROUT          ; Print the RETURN
             lda #0              ; Add the line-ending null
             sta BUFFER,x        ; ,,
+            lda BUFFER
+            beq Main
+            cmp #'?'
+            bne ch_sp
+            jmp System
+ch_sp:      cmp #' '
+            beq Main
             jsr NormCol         ; Set normal color
             ; Fall through to Transcribe
 
@@ -642,9 +650,6 @@ ch_room_t:  ldx #$ff            ; Check Room Timers. X is the Room Timer ID
             bne loop            ;   If not, get the next Room Timer
             lda TimerInit,x     ; Initialize the timer countdown
             sta TIMERS,x        ; ,,
-            lda #1              ; Set the room as seen to avoid double-trigger,
-            sta SEEN_ROOMS-1,y  ;   regardless of whether the room was actually
-            bne loop            ;   seen.
 moveto_r:   jsr AdvTimers
             pla
             tax
@@ -680,7 +685,7 @@ AdvTimers:  lda TIMERS          ; If the timer is 0, then it's not active
             bne adv_room_t      ;   If not, check Room Timers
             ldx TimerAct        ; Do the specified timeout action
             jsr DoEvent         ; ,,
-adv_room_t: ldx #$00            ; X = Room Timer index (Timer 0 is the Clock)
+adv_room_t: ldx #$00            ; X = Timer index (Timer 0 is the Clock)
 -loop:      inx                 ; ,,
             lda TimerInit,x     ; Does the timer exist?
             beq timer_r         ;   If not, at end of timers, exit
@@ -693,6 +698,9 @@ adv_room_t: ldx #$00            ; X = Room Timer index (Timer 0 is the Clock)
             lda TimerAct,x      ; Get Action ID
             tax
             jsr DoEvent         ; Perform the event
+            ldx CURR_ROOM       ; If an event was triggered, mark the
+            lda #1              ;   current room as seen to prevent
+            sta SEEN_ROOMS-1,x  ;   a double trigger
             pla
             tax
             jmp loop            ; Get next timer
@@ -848,3 +856,47 @@ NormCol:    lda #COL_NORM
 ; Linefeed Shortcut
 Linefeed:   lda #LF
             jmp CHROUT 
+
+; System 
+; Non-game commands, like Save and Load       
+System:     lda BUFFER+1
+            cmp #"S"
+            beq Save
+            cmp #"L"
+            beq Load
+            cmp #"Q"
+            beq quit
+            jmp Main
+quit:       jmp NewStory
+
+Save:       ldx #1              ; Device number
+            ldy #0              ; Command (none)
+            jsr SETLFS          ; ,,            
+            lda #10             ; Filename is the string "vicfiction"
+            ldx #<VICfiction    ;   ,,
+            ldy #>VICfiction    ;   ,,
+            jsr SETNAM          ;   ,,
+            ldx #<SEEN_ROOMS    ; Low byte start
+            stx $c1             ; ,,
+            ldy #>SEEN_ROOMS    ; High byte start
+            sty $c2             ; ,,
+            lda #$c1            ; Set tab
+            iny                 ; 2048 bytes
+            iny                 ; ,,
+            iny                 ; ,,
+            iny                 ; ,,
+            jsr SAVE            ; SAVE
+            jsr Linefeed
+            jmp Main
+            
+Load:       ldx #1              ; Tape device number
+            ldy #1              ; Load to header location
+            jsr SETLFS          ; ,,
+            lda #0              ; Get whatever the next file is
+            jsr SETNAM          ; ,,
+            lda #$00            ; Command for LOAD
+            jsr LOAD            ; ,,
+            jsr Linefeed
+            jmp Main
+            
+VICfiction: .asc "VICFICTION",0
