@@ -46,7 +46,7 @@ VIC         = $9000             ; VIC chip offset
 KBSIZE      = $c6               ; Keyboard buffer size
 
 ; NMI
-NMI         = $ff5b             ; Do nothing
+NMI         = $ff5b             ; Do nothing (RTI)
 NMINV       = $0318             ; Release NMI vector
 ;-NMINV     = $fffe             ; Development NMI non-vector (uncomment for dev)
 
@@ -74,7 +74,7 @@ LOOK_CMD    = 2                 ;               - LOOK
 GET_CMD     = 3                 ;               - GET
 DROP_CMD    = 4                 ;               - DROP
 INV_CMD     = 5                 ;               - INVENTORY
-WAIT_CMD    = $fe               ;               - WAIT
+WAIT_CMD    = 6                 ;               - WAIT
 IS_INVIS    = $01               ; Item Property - Invisible
 IS_UNMOVE   = $02               ;               - Unmoveable
 IS_PLHOLDER = $04               ;               - Placeholder
@@ -169,7 +169,7 @@ enter:      jsr CHROUT          ; Print the RETURN
             sta BUFFER,x        ; ,,
             lda BUFFER          ; Look at the first character for a
             beq Main            ;   couple things.
-            cmp #'/'            ; If slash, this is a System command
+            cmp #'*'            ; System command
             bne ch_sp           ; ,,
             jmp System          ; ,,
 ch_sp:      cmp #' '            ; If space, then the user just hit
@@ -669,7 +669,7 @@ set_rm_r:   rts
 
 ; Set Room Name
 ; Set up A and Y for room description display. This should be followed by
-; PrintAlt (for name), or PrintMsg (for description)         
+; PrintMsg (for name), or PrintAlt (for description)         
 RoomName:   jsr IsLight         ; Is the room illuminated?
             bcs sees_name       ; ,,
             jmp ShowNoSee       ; ,,
@@ -792,7 +792,8 @@ ShowScore:  ldx #0              ; X is the item index
             bne loop          
 CheckScore: ldx SCORE           ; If there's no score, don't display
             beq score_r         ; ,,
-            lda #<ScoreTx       ; Print the score text
+            jsr NormCol         ; Print the score test
+            lda #<ScoreTx       ; ,,
             ldy #>ScoreTx       ; ,,
             jsr PRINT           ; ,,
             ldx SCORE           ; Use BASIC's PRTFIX to show the decimal score
@@ -886,10 +887,7 @@ help:       lda #<HelpTx
 Save:       ldx #1              ; DEVICE=1 CASSETTE
             ldy #0              ; No command
             jsr SETLFS
-            lda #EON-SaveFile   ; File name length
-            ldx #<SaveFile      ; Set filename
-            ldy #>SaveFile      ; ,,
-            jsr SETNAM          ; ,,
+            jsr SetName         ; SETNAM call
             ldx #<SEEN_ROOMS    ; Start of data
             stx $c1             ; ,,
             lda #>SEEN_ROOMS    ; ,,
@@ -905,11 +903,24 @@ Save:       ldx #1              ; DEVICE=1 CASSETTE
 Load:       ldx #1              ; Tape device number
             ldy #1              ; Load to header location
             jsr SETLFS          ; ,,
-            lda #0              ; Get whatever the next file is
-            jsr SETNAM          ; ,,
+            jsr SetName         ; SETNAM call
             lda #$00            ; Command for LOAD
             jsr LOAD            ; ,,
-            jsr SetRoomAd       ; Set the (RM) pointer
-            jsr Linefeed
-            jmp Main
-                        
+            bcc post_load       ; If LOAD completes, show room
+            jsr Linefeed        ; ,,
+            jmp Main            ; If any problem, just back to main
+post_load:  jsr SetRoomAd       ; Set the (RM) pointer
+            lda #COL_ROOM       ; Show room name after load
+            jsr CHROUT          ; ,,
+            jsr Linefeed        ; ,,
+            jsr RoomName        ; ,,
+            jsr PrintMsg        ; ,,       
+            lda #0              ; Set item ID so it's a full-room
+            sta ITEM_ID         ;   Look, and then
+            jmp DoLook          ;   do that.
+            
+SetName:    lda #EON-SaveFile   ; File name length
+            ldx #<SaveFile      ; Set filename
+            ldy #>SaveFile      ; ,,
+            jmp SETNAM          ; ,,
+              
