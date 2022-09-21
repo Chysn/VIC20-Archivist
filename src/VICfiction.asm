@@ -245,6 +245,9 @@ failure:    sec                 ; FAILURE!
             jmp PrintAlt        ;   ,,
 success:    sec                 ; SUCCESS!
             ror ACT_SUCCESS     ; Set the action success flag
+            ldy CURR_ROOM       ; If a successful action happens in a room,
+            lda #1              ;   mark the room as "seen" to avoid duplicate
+            sta SEEN_ROOMS-1,y  ;   triggers
             lda ActResTxtH,x    ; Show the success message for the action
             beq do_result       ;   ,, (If high byte=0, it's a silent success)
             tay                 ;   ,,
@@ -634,14 +637,15 @@ ch_room_t:  ldx #$ff            ; Check Room Timers. X is the Room Timer ID
 -loop:      inx                 ; Advance to next ID 
             lda TimerInit,x     ; Reached the end of Room Timers?
             beq moveto_r        ;   If so, exit
-            lda TimerRoom,x     ; Get timer's room
-            cmp CURR_ROOM       ; Is player in this room?
-            bne loop            ;   If not, get next Room Timer
-            ldy CURR_ROOM       ; Does the "seen" status of this room match
-            lda SEEN_ROOMS-1,y  ;   the timer's setting?
-            cmp TimerSeen,x     ;   ,,
-            bne loop            ;   If not, get the next Room Timer
-            lda TimerInit,x     ; Initialize the timer countdown
+            lda CURR_ROOM       ; Get the current room
+            cmp TimerRoom,x     ;   Is the timer in this room?
+            bne loop            ;   If not, get next Room Timer            
+            tay                 ; Y=CURR_ROOM. Should timer be initialized?
+            lda TimerSeen,x     ;   If TimerSeen is 1, then always init
+            bne init_timer      ;   ,,
+            lda SEEN_ROOMS-1,y  ;   If TimerSeen is 0, then only init
+            bne loop            ;     first time room is seen
+init_timer: lda TimerInit,x     ; Initialize the timer countdown
             sta TIMERS,x        ; ,,
             bne loop            ; Go back for additional timers
 moveto_r:   jsr AdvTimers

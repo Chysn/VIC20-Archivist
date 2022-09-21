@@ -809,15 +809,14 @@ aAdEntry:   .asc "tHE bOSS ISN'T ALWAYS",LF
 ;              entering the room.
 ; TimerAct   - The Action ID that's executed when the timer reaches 0
 ; TimerSeen  - Is the timer started the FIRST time entering the room (0)? Or
-;              SUBSEQUENT times entering the room (1)? For ALL times, use
-;              two Room Timers, with 0 and 1.
+;              ALWAYS when entering the room (1)?
 ;
 ; Memory is allocated to keep track of 112 Timers
-TimerInit:  .asc 1,  1 , 1, 1, 1, 1, 5, 1, 1, 1, 1, 8, 1, 1, 1,ED
-TimerRoom:  .asc 1,  3 ,10,12,10,12,10,14,23,48,48,48,11,11, 2
-TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-TimerAct:   .asc 38, 2, 18,18,18,18,14,11,33,52,53,54,58,58,59
-TimerSeen:  .asc 0,  0, 0, 1, 1, 0,  0, 0,  0, 1, 1,1, 0, 1, 0
+TimerInit:  .asc 1,  1 , 1, 1, 5, 1, 1, 1, 1, 8, 1, 1,ED
+TimerRoom:  .asc 1,  3 ,12,10,10,14,23,48,48,48,11, 2
+TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+TimerAct:   .asc 38, 2, 18,18,14,11,33,52,53,54,58,59
+TimerSeen:  .asc 0,  0,  1, 1, 0, 0, 0, 1, 1, 1, 1, 0
 TimerDir:   .asc $01 ; Timer 0 direction ($01 = +1, $ff = -1)
 TimerTgt:   .asc 240 ; Timer 0 target (at which action happens)
 TimerOffst: .asc 13  ; Display time offset for Timer 0
