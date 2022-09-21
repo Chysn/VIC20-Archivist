@@ -188,10 +188,13 @@ rIntake:    .asc "iNTAKE rOOM",ED,"tHIS CIRCULAR ROOM IS",LF
             .asc "THE CENTER OF THE",LF,"SPACE. tHE CONSOLE IS",LF
             .asc "ABOUT A METER AWAY.",LF,LF,"a vERTI-tUBE LEADS",LF
             .asc "DOWN TO aDMIN.",ED
-rOffice:    .asc "aDMIN oFFICE",ED,"tHE bOSS ISN'T ALWAYS",LF
-            .asc "IN, BUT SHE IS TODAY,",LF,"AND SHE GIVES YOU A",LF
-            .asc "SLIGHT NOD AS YOU",LF,"EXIT THE TUBE.",LF,LF
-            .asc "'dAMN BUSY DAY,",LF,"TODAY,' SHE SAYS.",LF,LF
+rOffice:    .asc "aDMIN oFFICE",ED,"tHIS IS A TYPICAL",LF
+            .asc "63RD CENTURY OFFICE,",LF,"IN THAT IT CONTAINS",LF
+            .asc "LITTLE. aDMIN WORK",LF
+            .asc "NO LONG REQUIRES",LF
+            .asc "EQUIPMENT.",LF,LF
+            .asc "tHE bOSS IS STANDING",LF,"AGAINST A WALL,",LF
+            .asc "STARING, BUT YOU KNOW",LF,"SHE'S HARD AT WORK.",LF,LF
             .asc "a RED SIGN HANGS ON",LF,"THE DOOR TO THE EAST.",ED
 rPlaza:     .asc "pLAZA",ED,ED
 
@@ -230,7 +233,7 @@ rTBooth:    .asc "tICKET bOOTH",ED,"nAVIN fIELD, dETROIT.",LF,LF
             .asc "  ",173,192,192,192,192,192,192,192,192,192,192,192
             .asc 192,192,192,189,LF,LF
             .asc "a FRECKLY BOY AT THE",LF,"COUNTER IS BARKING,",LF
-            .asc "'tICKETS! bUY YOUR",LF,"TICKETS HERE!'",ED
+            .asc "'tICKETS! buy YOUR",LF,"TICKETS HERE!'",ED
 rHomeSt:    .asc "hOME pLATE sTANDS",ED,"tHE GREEN OF THE",LF
             .asc "DIAMOND IS SOMETHING",LF,"YOU'LL NEVER FORGET,",LF
             .asc "AS ARE THE SOUNDS OF",LF,"THE BAT AND THE SMELL",LF
@@ -248,8 +251,8 @@ rLeftF:     .asc "lEFT fIELD sTANDS",ED,"eVERYBODY IS",LF
             .asc "THEY'LL SOON BE SAD",LF,"ABOUT BEING ON THE",LF
             .asc "WRONG SIDE OF THE",LF,"PARK.",ED
 rCorridor:  .asc "cORRIDOR",ED,"sTANDS ARE TO THE",LF,"NORTH.",ED
-rJail:      .asc "dETROIT jAIL",ED,"tHE CELL IS LIKE 2x2",LF
-            .asc "METERS. iT'S SUPER",LF,"EMBARASSING.",LF,LF
+rJail:      .asc "dETROIT jAIL",ED,"tHE CELL IS LIKE",LF
+            .asc "1.5x1.5M. iT'S SUPER",LF,"EMBARASSING.",LF,LF
             .asc "oNE HOPES YOU HAVE",LF,"YOUR REEL.",ED
 rAnteCh:    .asc "aNTECHAMBER",ED,"tOMB OF nEFERTARI,",LF
             .asc "vALLEY OF THE qUEENS,",LF,"lUXOR.",LF,LF
@@ -540,7 +543,7 @@ iClock:     .asc "C",ED,"sTANDING A STATELY 3M",LF,"TALL, THIS gERMAN",LF
             .asc "CLOCK'S MOVEMENT CAN",LF,"BE HEARD THROUGHOUT",LF
             .asc "THE QUIET HOME.",LF,LF,"iTS FACE IS COVERED",LF
             .asc "WITH CARVINGS OF",LF,"BIRDS AND READS",ED
-iWarnSign:  .asc "S",ED,"   bubble to remain",LF,LF,"   engaged   during",LF,LF
+iWarnSign:  .asc "S",ED,"   bubble to remain",LF,LF,"   unbroken  during",LF,LF
             .asc "   business   hours",LF,LF,"   alarm will sound",LF,LF
             .asc "   if opened",ED
 
@@ -588,35 +591,35 @@ iWarnSign:  .asc "S",ED,"   bubble to remain",LF,LF,"   engaged   during",LF,LF
 ActVerb:    .byte 7,8,EV,9,9,3, 3,  7,10, 10,10,EV, 9,11,EV,12,12,12 ; 0-17
             .byte EV, 9,13,2,2,2,2,2,2,2,                            ; 18-27
             .byte 14, 9,16,15,15,EV,17, 7,11,18,EV, 2, 9, 7, 7, 7    ; 28-43
-            .byte 16,15,EV,18,18,18,16,16,EV,EV,EV,19,13,13,EV,ED                                 
+            .byte 16,15,EV,18,18,18,16,16,EV,EV,EV,19,13,13,EV,EV,ED                                 
 ActItem:    .byte 3,4,0, 7,9,8, 8, 12,10,  4, 0,0 ,16,14, 0,13,13,13
             .byte 0, 21,22,24,24,24,24,24,24,24
             .byte 0, 32,31,34, 0, 0,35,42, 8, 0, 0,43,45,48,49,50
-            .byte 30,31, 0,12,48,42,54, 0, 0, 0, 0, 0,56,56, 0
+            .byte 30,31, 0,12,48,42,54, 0, 0, 0, 0, 0,56,56, 0, 0
 ActInRoom:  .byte 0,0,0, 0,0,0, 0,  6, 6,  6, 6,0,  0, 9, 0,11,11,11
             .byte 0,  0, 0,16,17,18,19,20,21,22
             .byte 0,  0,24,25,25, 0, 0, 9, 6, 0, 0,33, 0,48,50,50
-            .byte 50,50, 0, 0, 0, 0,50,50,48,48, 0, 0, 8, 8,11
+            .byte 50,50, 0, 0, 0, 0,50,50,48,48, 0, 0, 8, 8,11, 0
 ActInvCon:  .byte 0,4,0, 0,0,0, 0,  0,10,  4, 0,0,  0,15, 0, 0,17, 0
             .byte 13, 0, 0,0,0,0,0,0,0,0
             .byte 0,  0,31, 0, 0, 0,35,14, 0, 0, 0, 0, 0, 0, 0, 0
-            .byte 30,30, 0, 0, 0, 0, 0,0 ,52, 0, 0,10, 0, 0, 0
+            .byte 30,30, 0, 0, 0, 0, 0,0 ,52, 0, 0,10, 0, 0, 0, 0
 ActRoomCon: .byte 3,0,0, 1,1,11,12, 0,12, 12,12,0 , 1, 0, 0,20,19,19
             .byte 0,  1,22,0,0,0,0,0,0,0
             .byte 0,  1, 0, 0, 1, 0, 0, 0, 0, 0, 0,44, 1, 0, 0, 0
-            .byte 51,53, 0,12,48,42, 0,0 , 4, 0, 0, 0, 0, 0,19
+            .byte 51,53, 0,12,48,42, 0, 1, 4, 0, 0, 0, 0, 0,19, 0
 ActInvExcl: .byte 0,1,0, 0,0,8, 8,  8, 8,  8, 8,14, 0, 0, 0,0,  0, 0
             .byte 0,  0, 0,0,0,0,0,0,0,0
             .byte 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-            .byte 0,  0, 0, 0, 0, 0, 0,30, 0, 0, 4, 0, 0, 0, 0
+            .byte 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0
 ActFrom:    .byte 1,0,0, 0,0,11,1,  1, 10, 4, 1,0 , 0,15,18,1, 17,19
             .byte 0,  0, 1,1,1,1,1,1,1,1
             .byte 1,  0, 0, 0, 1, 1, 1, 1, 1, 1, 0,44, 0, 1, 1, 1
-            .byte 51,30, 0, 1, 0, 0, 1,1,  4,55, 0, 1,15,56, 1
+            .byte 51,30, 0, 1, 0, 0, 1,1,  4,55, 0, 1,15,56, 1, 1
 ActTo:      .byte 1,1,0, 4,0,12,1,  1, 8,  8, 1,9 , 9,14,19,1, 13,20
             .byte 15,16, 1,1,1,1,1,1,1,1
             .byte 1 ,23,25,26, 1, 1, 1, 1, 1, 1, 0,30,34, 1, 1, 1
-            .byte 53,31, 0, 1, 51,15,1,1, 55, 4, 0, 1, 0,57, 1
+            .byte 53,31, 0, 1, 51,15,1,1, 55, 4, 0, 1, 0,57, 1, 1
 ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aJeffOffer,<aJeffAcc,<aJeffAcc,<aJeffDecl
             .byte <aNeedTix,<aX,<aBuyTix,<aBallHit,<aMissed,<aTryCatch,0
@@ -626,7 +629,7 @@ ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aFoundGum,<aX,<aTRebels,<aTMedic,<aTVande,<aPrScan
             .byte <aPrEnter,<aWin,<aAtJeff,<aAtRebels,<aAtBoy,<aScDNA
             .byte <aPrFail,<aStealHelm,0,<aCaught,<aCell,<aRevCoin,0
-            .byte <aBallFly
+            .byte <aBallFly,<aAdEntry
 ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aJeffOffer,>aJeffAcc,>aJeffAcc,>aJeffDecl
             .byte >aNeedTix,>aX,>aBuyTix,>aBallHit,>aMissed,>aTryCatch,0
@@ -636,7 +639,7 @@ ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aFoundGum,>aX,>aTRebels,>aTMedic,>aTVande,>aPrScan
             .byte >aPrEnter,>aWin,>aAtJeff,>aAtRebels,>aAtBoy,>aScDNA
             .byte >aPrFail,>aStealHelm,0,>aCaught,>aCell,>aRevCoin,0
-            .byte >aBallFly
+            .byte >aBallFly,>aAdEntry
             
 ; Action Results
 aBoss:      .asc "'hAVE A GREAT DAY.",LF,LF,"'cAPEK COLLECTS YOUR",LF
@@ -678,7 +681,7 @@ aJeffOffer: .asc "'i INVENTED THIS DESK",LF,"AND i'M NOT GOING TO",LF
             .asc "LET YOU TAKE IT.",LF,LF,"'bUT... yOU LOOK LIKE",LF
             .asc "SOMEONE WITH ACCESS",LF,"TO FUTURISTIC THINGS.",LF,LF
             .asc "'iF YOU BRING ME",LF,"SOMETHING INSANELY",LF
-            .asc "GREAT FROM YOUR",LF,"FUTURE, i SHALL swap",LF
+            .asc "GREAT FROM THE",LF,"FUTURE, i SHALL swap",LF
             .asc "MY MOST EXCELLENT",LF,"DESK FOR IT!'",ED            
             .asc "'oUR BUSINESS IS",LF
             .asc "CONCLUDED. i BID YOU",LF,"GOOD DAY.'",ED
@@ -690,12 +693,12 @@ aJeffAcc:   .asc "'wHAT A MARVELOUS",LF,"THING! i DARESAY WE",LF
             .asc "PROJECT.'",LF,LF
             .asc "jEFFERSON HANDS",LF,"YOU HIS DESK.",ED,ED
 aNeedTix:   .asc "fRECKLE-FACED BOY AT",LF,"THE COUNTER STOPS",LF
-            .asc "YOU. 'yOU NEED TO BUY",LF,"A TICKET TO GET IN!'",ED
+            .asc "YOU. 'yOU NEED TO buy",LF,"A TICKET TO GET IN!'",ED
             .asc "'yOU BETTER GET IN,",LF,"bABE'S ON DECK!'",ED
 aBuyTix:    .asc "'tHAT'S SOME FUNNY",LF,"LOOKIN' MONEY, BUT i",LF
             .asc "GUESS IT SPENDS THE",LF,"SAME. hERE'S YOUR",LF
             .asc "TICKET.'",ED,"'tHESE TICKETS COST",LF
-            .asc "money!' tHE BOY SAYS.",ED
+            .asc "MONEY!' THE BOY SAYS.",ED
 aBallHit:   .asc COL_ALERT,"yOU HEAR THE CRACK",LF,"OF rUTH'S BAT AND",LF
             .asc "SEE THE BALL FLYING",LF,"TOWARD RIGHT FIELD.",ED
             .asc "tHE GAME GOES ON.",ED
@@ -774,7 +777,7 @@ aAtRebels:  .asc "fOR EXAMPLE, THESE",LF,"REBELS, WHO'VE",LF
             .asc "BLINDFOLD YOU AND",LF,"DRAG YOU...",LF
             .asc "SOMEWHERE.",ED,ED
 aScDNA:     .asc "yOU'LL NEED TO BE WAY",LF,"MORE SPECIFIC.",ED,ED
-aPrFail:    .asc "nOTHING HAPPENS.",ED,ED
+aPrFail:    .asc ED,"nOTHING HAPPENS.",ED
 aStealHelm: .asc "oNE OF THE REBELS",LF,"SPOTS YOU WITH THE",LF
             .asc "hELM AND SOON THEY'RE",LF,"ALL UPON YOU.",LF,LF
             .asc "tHEY TRY TO GET THE",LF,"hELM BACK, BUT GRAB",LF
@@ -788,9 +791,13 @@ aCell:      .asc "sEEMS LIKE THERE'S NO",LF,"COVERAGE.",ED,"yOU DON'T HAVE A",LF
             .asc "PHONE",ED
 aRevCoin:   .asc "tHE BUREAU TOP ROLLS",LF,"OPEN. tHERE'S NOT",LF
             .asc "MUCH THERE.",ED,"tHERE'S NOT MUCH.",ED
-aBallFly:   .asc "a PARABOLIC 2-rbi",LF,"HOMER IS HEADED RIGHT",LF
+aBallFly:   .asc "a PARABOLIC 2-rbi",LF,"BALL IS HEADED RIGHT",LF
             .asc "AT YOU. catch IT!",ED
             .asc ED
+aAdEntry:   .asc "tHE bOSS ISN'T ALWAYS",LF
+            .asc "IN, BUT SHE IS TODAY,",LF,"AND SHE GIVES YOU A",LF
+            .asc "SLIGHT NOD AS YOU",LF,"EXIT THE vERTI-tUBE.",LF,LF
+            .asc "'dAMN BUSY DAY,",LF,"AHEAD,' SHE SAYS.",ED,ED
             
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; TIMERS
@@ -806,11 +813,11 @@ aBallFly:   .asc "a PARABOLIC 2-rbi",LF,"HOMER IS HEADED RIGHT",LF
 ;              two Room Timers, with 0 and 1.
 ;
 ; Memory is allocated to keep track of 112 Timers
-TimerInit:  .asc 1,  1 , 1, 1, 1, 1, 5, 1, 1, 1, 1, 8, 1, 1,ED
-TimerRoom:  .asc 1,  3 ,10,12,10,12,10,14,23,48,48,48,11,11
-TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-TimerAct:   .asc 38, 2, 18,18,18,18,14,11,33,52,53,54,58,58
-TimerSeen:  .asc 0,  0, 0, 1, 1, 0,  0, 0,  0, 1, 1,1, 0, 1
+TimerInit:  .asc 1,  1 , 1, 1, 1, 1, 5, 1, 1, 1, 1, 8, 1, 1, 1,ED
+TimerRoom:  .asc 1,  3 ,10,12,10,12,10,14,23,48,48,48,11,11, 2
+TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+TimerAct:   .asc 38, 2, 18,18,18,18,14,11,33,52,53,54,58,58,59
+TimerSeen:  .asc 0,  0, 0, 1, 1, 0,  0, 0,  0, 1, 1,1, 0, 1, 0
 TimerDir:   .asc $01 ; Timer 0 direction ($01 = +1, $ff = -1)
 TimerTgt:   .asc 240 ; Timer 0 target (at which action happens)
 TimerOffst: .asc 13  ; Display time offset for Timer 0
