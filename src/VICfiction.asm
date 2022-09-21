@@ -217,6 +217,7 @@ DoEvent:    cpx #0              ; If no action is specified, do nothing
 do_event:   lda #0              ; Clear success and failure flags for use
             sta ACT_SUCCESS     ;   by caller
             sta ACT_FAILURE     ;   ,,
+            sta PATTERN         ; Clear PATTERN since events don't use it
             ; Fall through to EvalAction
 
 ; Evaluate Action
@@ -237,12 +238,13 @@ ch_excl:    lda ActInvExcl,x    ; Is there an item exclusion?
 failure:    sec                 ; FAILURE!
             ror ACT_FAILURE     ; Set the action failure flag
             bit ACT_SUCCESS     ; If a previous success message was shown,
-            bmi next_act        ;   suppress the failure message
+            bmi eval_r1          ;   suppress the failure message
             lda ActResTxtH,x    ; Show the failure message for the action
-            beq next_act        ;   ,, (If high byte=0, it's a silent failure)
+            beq eval_r1         ;   ,, (If high byte=0, it's a silent failure)
             tay                 ;   ,,
             lda ActResTxtL,x    ;   ,,
             jmp PrintAlt        ;   ,,
+eval_r1:    rts
 success:    sec                 ; SUCCESS!
             ror ACT_SUCCESS     ; Set the action success flag
             ldy CURR_ROOM       ; If a successful action happens in a room,
@@ -332,21 +334,21 @@ BasicAct:   bit ACT_SUCCESS     ; Bypass the basic actions if one or more
             bmi h_timer         ;   database actions was successful
             lda VERB_ID         ; Get the entered verb
             cmp #GO_CMD         ; Handle GO/MOVE
-            bne ch_look         ; ,,
+            bne ch_look_c       ; ,,
             jmp DoGo            ; ,,
-ch_look:    cmp #LOOK_CMD       ; Handle LOOK
-            bne ch_get          ; ,,
+ch_look_c:  cmp #LOOK_CMD       ; Handle LOOK
+            bne ch_get_c        ; ,,
             jmp DoLook          ; ,,
-ch_get:     cmp #GET_CMD        ; Handle GET/TAKE
-            bne ch_inv          ; ,,
+ch_get_c:   cmp #GET_CMD        ; Handle GET/TAKE
+            bne ch_inv_c        ; ,,
             jmp DoGet           ; ,,
-ch_inv:     cmp #INV_CMD        ; Handle INVENTORY
-            bne ch_drop         ; ,,
+ch_inv_c:   cmp #INV_CMD        ; Handle INVENTORY
+            bne ch_drop_c       ; ,,
             jmp ShowInv         ; ,,
-ch_drop:    cmp #DROP_CMD       ; Handle DROP
-            bne ch_z            ; ,,
+ch_drop_c:  cmp #DROP_CMD       ; Handle DROP
+            bne ch_z_c          ; ,,
             jmp DoDrop          ; ,,
-ch_z:       cmp #WAIT_CMD       ; Handle WAIT
+ch_z_c:     cmp #WAIT_CMD       ; Handle WAIT
             bne no_cmd          ;   ,,
             jsr AdvTimers       ;   Only advance timers
             jmp Confirm         ;   and confirm
@@ -359,14 +361,15 @@ basic_r:    jmp Main            ; Return to Main main routine
 ; Do Drop
 ; Of Item ID
 DoDrop:     lda ITEM_ID         ; If no Item ID was found, show an
-            beq unknown         ;   error message
-            ldy #MAX_INV-1      ; Y is the inventory index
-ch_hand:    lda INVENTORY,y     ; Is the specified item here?
+            bne ch_inv          ;   error message
+            jmp not_inv         ;   ,,
+ch_inv:     ldy #MAX_INV-1      ; Y is the inventory index
+-loop:      lda INVENTORY,y     ; Is the specified item here?
             cmp ITEM_ID         ;   ,,
             beq drop_now        ;   If so, drop it
             dey                 ;   If not, iterate through other inventory
-            bpl ch_hand         ;   ,,
-unknown:    lda #<NoDropTx      ; The item was not found in inventory, so
+            bpl loop            ;   ,,
+not_inv:    lda #<NoDropTx      ; The item was not found in inventory, so
             ldy #>NoDropTx      ;   show the "don't have it" message
             jsr PrintRet        ;   ,,
 drop_now:   tax                 ; X is the item index
@@ -389,16 +392,21 @@ DoLook:     jsr IsLight         ; If this is a dark room, and player has no
 ShowNoSee:  lda #<NoLightTx     ;   message
             ldy #>NoLightTx     ;   ,,
             jmp PrintRet        ;   ,,
-sees_look:  lda ITEM_ID         ; Get the current Item ID
-            bne SingleItem      ; If there's an Item ID, then LOOK at it
+sees_look:  lda PATTERN
+            bne SingleItem
             jsr RoomDesc        ; Show room desciption
             jmp Main            
             ; Look at a single item
-SingleItem: jsr ItemInRm        ; The LOOK command took an Item ID. Is that item
+SingleItem: lda ITEM_ID         ; Get the Item ID
+            beq Unknown         ; There was a pattern, but not an Item ID
+            jsr ItemInRm        ; The LOOK command took an Item ID. Is that item
             bcs in_room         ;   in the current room?
 NotHere:    lda #<NotHereTx     ; If the specified item isn't in the room or
             ldy #>NotHereTx     ;   inventory, show a message and go back
             jmp PrintRet        ;   for another command
+Unknown:    lda #<UnknownTx     ; If the specified item doesn't have an Item ID,
+            ldy #>UnknownTx     ;   show an Unknown Item message
+            jmp PrintRet        ;   ,,
 in_room:    tax                 ; X = specified Item ID
             jsr NormCol         ; Normal color description
             lda ItemTxtH-1,x    ; Show the description of the item
@@ -471,9 +479,13 @@ PrintRet:   jsr PrintMsg        ; ,,
 go_r:       jmp Main    
 
 ; Do Get            
-DoGet:      lda ITEM_ID         ; Is there an item to get?
-            beq get_fail        ;   If not, say it's not here
-            jsr ItemInv         ; Is the item in inventory already?
+DoGet:      lda PATTERN         ; Was an item provided?
+            bne ch_known        ;   If not, show generic error
+            jmp NoVerb          ;   ,,
+ch_known:   lda ITEM_ID         ; Is there an item to get?
+            bne ch_already      ;   If the item isn't recognized, show error
+            jmp Unknown         ;   ,,
+ch_already: jsr ItemInv         ; Is the item in inventory already?
             bcc ch_in_rm        ; ,,
             lda #<HaveItTx      ; If in inventory, show the "already have it"            
             ldy #>HaveItTx      ;   message
@@ -524,10 +536,13 @@ nothing:    dey
 ; Get Pattern
 ;   from the Input Buffer
 ;   starting at position X  
-GetPattern: lda BUFFER,x        ; Trim leading spaces by ignoring them
+GetPattern: lda #0
+            sta PATTERN
+-loop:      lda BUFFER,x        ; Trim leading spaces by ignoring them
+            beq pattern_r       ; ,,
             inx                 ; ,,
             cmp #SPACE          ; ,,
-            beq GetPattern      ; ,,
+            beq loop            ; ,,
             sta PATTERN         ; Put the first character into the pattern
             sta PATTERN+1       ; ,,
 -loop:      lda BUFFER,x        ; Get subsequent characters until we hit a
@@ -564,38 +579,7 @@ verb_found: lda VerbID-1,y      ; Cross-reference VerbID to handle synonyms
             sty VERB_ID         ; Set VerbID, set carry, and return
             sec                 ; ,,
             rts                 ; ,,
-            
-; Is Item In Room?
-; Specify Item ID in A  
-; Carry set if in room          
-ItemInRm:   sta TEMP            ; Preserve A for caller
-            sty TEMP+1          ; Preserve Y for caller
-            tay                 ; Switch A to index
-            lda ITEM_ROOMS-1,y  ; Is the item in the current room?
-            cmp CURR_ROOM       ; ,,
-            beq yes_in_rm       ; ,,
-            tya                 ; Is the item in inventory?
-in_inv:     ldy #MAX_INV        ; ,,
--loop:      dey                 ; ,,
-            bmi no_in_rm        ; ,, Reached end, no
-            cmp INVENTORY,y     ; ,,
-            bne loop            ; ,, If yes, fall through to yes_in_rm
-yes_in_rm:  lda TEMP
-            ldy TEMP+1
-            sec                 ; Set carry (in room)
-            rts
-no_in_rm:   lda TEMP
-            ldy TEMP+1
-            clc                 ; Clear carry (not in room)
-            rts
 
-; Is Item In Inventory
-; Specify Item ID in A  
-; Carry set if in inventory          
-ItemInv:    sta TEMP
-            sty TEMP+1
-            jmp in_inv
-            
 ; Get Item ID
 ; Go through first and last characters of the item until
 ; a match is found, or return 0 as the ItemID
@@ -626,7 +610,38 @@ ch_ph:      ldy ITEM_ID         ; Get the Item ID, if any
             ldy #0
             sty ITEM_ID         ; Item has been found. Set ItemID and return
 itemid_r:   rts                 ; ,,
+            
+; Is Item In Room?
+; Specify Item ID in A  
+; Carry set if in room          
+ItemInRm:   sta TEMP            ; Preserve A for caller
+            sty TEMP+1          ; Preserve Y for caller
+            tay                 ; Switch A to index
+            lda ITEM_ROOMS-1,y  ; Is the item in the current room?
+            cmp CURR_ROOM       ; ,,
+            beq yes_in_rm       ; ,,
+            tya                 ; Is the item in inventory?
+in_inv:     ldy #MAX_INV        ; ,,
+-loop:      dey                 ; ,,
+            bmi no_in_rm        ; ,, Reached end, no
+            cmp INVENTORY,y     ; ,,
+            bne loop            ; ,, If yes, fall through to yes_in_rm
+yes_in_rm:  lda TEMP
+            ldy TEMP+1
+            sec                 ; Set carry (in room)
+            rts
+no_in_rm:   lda TEMP
+            ldy TEMP+1
+            clc                 ; Clear carry (not in room)
+            rts
 
+; Is Item In Inventory?
+; Specify Item ID in A  
+; Carry set if in inventory          
+ItemInv:    sta TEMP
+            sty TEMP+1
+            jmp in_inv
+            
 ; Move To Room
 ; Set current room to A and add room parameter address to (RM)
 MoveTo:     sta CURR_ROOM
@@ -833,17 +848,17 @@ room_light: sec                 ; The room is well-illuminated, so set
             
 ; Print Alternate Message
 ; Given the Message address (A, Y), look for the ED+1, then print from there
-PrintAlt:   sta PATTERN
-            sty PATTERN+1
+PrintAlt:   sta $07
+            sty $08
             ldy #0
--loop:      lda (PATTERN),y
-            inc PATTERN
+-loop:      lda ($07),y
+            inc $07
             bne ch_end
-            inc PATTERN+1
+            inc $08
 ch_end:     cmp #0
             bne loop
-set_print:  lda PATTERN
-            ldy PATTERN+1       
+set_print:  lda $07
+            ldy $08       
             ; Fall through to PrintMsg
 
 ; Print Message 1

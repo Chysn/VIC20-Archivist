@@ -72,6 +72,7 @@ NoDropTx:   .asc COL_ALERT,"yOU DON'T HAVE THAT.",ED
 HaveItTx:   .asc COL_ALERT,"yOU ALREADY HAVE IT.",ED
 GameOverTx: .asc COL_ALERT,"    - the end -",ED
 NotHereTx:  .asc COL_ALERT,"tHAT'S NOT HERE.",ED
+UnknownTx:  .asc COL_ALERT,"tHAT'S UNIMPORTANT.",ED
 NoPathTx:   .asc COL_ALERT,"cAN'T GO THAT WAY.",ED
 NoMoveTx:   .asc COL_ALERT,"tHAT WON'T MOVE.",ED
 FullTx:     .asc COL_ALERT,"yOU CAN'T CARRY MORE.",ED
@@ -85,17 +86,17 @@ ConfirmTx:  .asc COL_ALERT,"ok.",ED
 ; Basic - GO (MovE), LooK (L,EX), GeT (TakE), DroP, InventorY (I), WAIT (Z)
 ; Game - TALK(7), WIND(8), DIAL(9), SET(2), SWAP(10), BUY(11), CATCH(12)
 ;        OPEN(13), PANIC(14), ENTER(15), SCAN(16), PLAY(17),
-;        ATTACK/KILL/FIGHT(18), CALL(19), SHOW(2)
+;        ATTACK/KILL/FIGHT(18), CALL(19), SHOW(2), WEAR(20)
 ; Verb IDs are 1-indexed
 Verb1:      .byte 'G','M','L','L','E','G','T','D','I','I','W','Z'   ; Basic Verbs
             .byte 'T','W','D','R','S','B','C','O','P','E'
-            .byte 'S','P','A','K','F','C','S',ED
+            .byte 'S','P','A','K','F','C','S','W',ED
 VerbL:      .byte 'O','E','K','L','X','T','E','P','Y','I','T','Z'   ; Basic Verbs
             .byte 'K','D','L','D','P','Y','H','N','C','R'
-            .byte 'N','Y','K','L','T','L','W'
+            .byte 'N','Y','K','L','T','L','W','R'
 VerbID:     .byte  1,  1,  2,  2,  2,  3,  3,  4,  5,  5,  6,  6    ; Basic Verbs
             .byte  7,  8,  9,  2, 10, 11, 12, 13, 14, 15
-            .byte 16, 17, 18, 18, 18, 19,  2
+            .byte 16, 17, 18, 18, 18, 19,  2, 20
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ROOMS
@@ -391,21 +392,21 @@ ItemTxtH:   .byte >iCursor,>iConsole,>iBoss,>iReel,>iQuota,>iWatch,>iYear
             .byte >iBureau,>iBureau,>iClock,>iWarnSign
 
 ; Item Descriptions
-iCursor:    .asc "cURSOR",ED,"tHE CURSOR EVOKES A",LF
+iCursor:    .asc ED,"tHE CURSOR EVOKES A",LF
             .asc "STEAM ENGINE STUFFED",LF,"INTO A TUXEDO.",LF,LF
             .asc "sEVERAL WHEELS SPIN",LF,"AT VARYING SPEEDS,",LF
             .asc "BLACK PIPES AND",LF,"VALVES EVERYWHERE.",LF,LF
             .asc "tHE bOSS TRIED TO",LF,"EXPLAIN HOW IT WORKS",LF
             .asc "ONCE. hAD TO DO WITH",LF,"BUBBLES. iT GETS YOU",LF
             .asc "FROM WHEN TO WHEN.",ED
-iConsole:   .asc "cONSOLE",ED,"yOU'D IMAGINE THEY'D",LF
+iConsole:   .asc ED,"yOU'D IMAGINE THEY'D",LF
             .asc "HAVE FANCIER CONSOLES",LF,"IN THE 63RD CENTURY,",LF
             .asc "BUT THIS CONSOLE IS",LF,"JUST A STAND WITH A",LF
             .asc "ROTARY CONTROL TO",LF,"dial DESTINATIONS.",LF,LF
             .asc "pROBABLY THE ux dEV",LF,"WANTED TO MAKE YOU",LF
             .asc "COMFORTABLE, AND",LF,"MISSED THE MARK BY",LF
             .asc "FIFTY YEARS.",ED
-iBoss:      .asc "tHE boss",ED,"tHE bOSS LOOKS LIKE A",LF
+iBoss:      .asc ED,"tHE bOSS LOOKS LIKE A",LF
             .asc "MIDDLE-AGED WOMAN",LF,"IN A VIOLET LAB COAT,",LF
             .asc "BUT YOU KNOW SHE'S",LF
             .asc "BEEN DOING THIS FOR A",LF,"HUNDRED YEARS. sHE'S",LF
@@ -417,7 +418,7 @@ iReel:      .asc "tEMPORAL reel",ED,"tHE REEL IS THE",LF
             .asc "WHEEL AFFIXED, SOFTLY",LF,"WHIRRING, WITH A DIM",LF
             .asc "PULSING MAUVE LIGHT.",LF,LF
             .asc "yOU OPERATE IT BY",LF,"windING IT.",ED
-iQuota:     .asc "sCREEN",ED
+iQuota:     .asc ED
             .asc "    ",176,192,"dUE tODAY",192,174,LF
             .asc "    ",221,    "  * 1255bc ",221,LF
             .asc "    ",221,    "  * 1776   ",221,LF
@@ -453,9 +454,9 @@ iGlove:     .asc "bASEBALL glove",ED,"iT'S A TAD SMALL,",LF
             .asc "AS A CHILD'S GLOVE,",LF,"BUT IT SHOULD WORK.",ED
 iPlaque:    .asc "iNSCRIBED gOLD plaque",ED,"yOUR ANCIENT eGYPTIAN",LF,
             .asc "IS RUSTY. mAYBE LIKE:",LF,LF,COL_ALERT
-            .asc "take no  gold  from my",LF,"birthright,  lest  its",LF
-            .asc "curse snuff your light",LF
-            .asc "(silver & bronze too!)",LF,COL_NORM
+            .asc "take no  gold from my",LF,LF,"birthright, lest  its",LF,LF
+            .asc "curse snuff the light",LF,LF
+            .asc "(silver & bronze too)",LF,LF,COL_NORM
             .asc "eGYPTIAN MUMMY CURSE?",LF,"that CAN'T BE A REAL",LF
             .asc "THING. rIGHT...?",ED
 iSarc:      .asc "sARCHOPHAGUS",ED,"nEFERTARI'S FINAL",LF
@@ -487,7 +488,7 @@ iSandal:    .asc "nEFERTARI'S sandal",ED,"aN INTRICATE WOVEN",LF
 iGum:       .asc "cHEWED gum",ED,"sMELLS LIKE FRESH",LF,"MINT, BUT STILL",LF
             .asc "PRETTY GROSS.",ED
 iEye:       .asc "hUMAN eye",ED,"hAZEL, BUT STILL",LF,"PRETTY GROSS.",ED
-iLUE:       .asc "42",ED,"tHE ULTIMATE ANSWER.",ED
+iLUE:       .asc ED,"tHE ULTIMATE ANSWER.",ED
 iKeypad:    .asc "kEYPAD",ED,"a FADING SIGN SAYS",LF,"'pLEASE enter YOUR",LF
             .asc "2-DIGIT PASSCODE.'",ED
 iGuitar:    .asc "pRINCE'S guitar",ED,"yELLOW cLOUD gUITAR.",LF,LF
@@ -496,54 +497,55 @@ iGuitar:    .asc "pRINCE'S guitar",ED,"yELLOW cLOUD gUITAR.",LF,LF
             .asc "TO THE sMITHSONIAN IN",LF,"1993. tHIS IS THE",LF
             .asc "GUITAR pRINCE USED IN",LF,"THE MOVIE pURPLE",LF
             .asc "rAIN.",ED
-iWB:        .asc "wORKBENCH",ED,"tHE WORKBENCH IS",LF,"LARGE AND TIDY.",ED
+iWB:        .asc ED,"tHE WORKBENCH IS",LF,"LARGE AND TIDY.",ED
 iT:         .asc "tOOLS",ED,"tHE TOOL KIT CONTAINS",LF,"ALL THE USUAL STUFF,",LF
             .asc "NONE OF WHICH YOU",LF,"NEED.",ED
-iBoy:       .asc "bOY",ED,"hE'S ABOUT 12 YEARS",LF,"OLD WITH SHORT RED",LF
+iBoy:       .asc ED,"hE'S ABOUT 12 YEARS",LF,"OLD WITH SHORT RED",LF
             .asc "HAIR, WEARING A",LF,"tIGERS CAP AND A",LF,"BUTTONED LONG-",LF
             .asc "SLEEVE SHIRT. hE'S",LF,"PRETTY FRIENDLY, BUT",LF
             .asc "HE OBVIOUSLY DOESN'T",LF,"GROK YOUR ARCHAIC",LF
             .asc "APPEARANCE.",ED
-iTable:     .asc "bISTRO table",ED,"rOUND, GLASS MOSAIC",LF
-            .asc "TILES, SOME MISSING.",ED
+iTable:     .asc ED,"a ROUND BISTRO TABLE,",LF
+            .asc "WITH A GLASS TILE",LF,"MOSAIC IN THE PATTERN",LF
+            .asc "OF A MONARCH",LF,"BUTTERFLY.",ED
 iGreenTot:  .asc "green tOTEM",ED,"tHIS WOODEN CARVING",LF
             .asc "OF A TORTOISE IS",LF,"GREEN, FOR ITS FOREST",LF
             .asc "HOME. iT'S 4CM TALL.",ED
 iBlueTot:   .asc "blue tOTEM",ED,"tHIS WOODEN CARVING",LF
             .asc "OF A SWIFT IS BLUE,",LF,"FOR ITS SKY HOME.",LF
             .asc "iT'S 9CM TALL.",ED
-iRebels:    .asc "rEBELS",ED,"vANDE'S rEBELS ARE",LF,"FIGHTING FOR FREEDOM",LF
+iRebels:    .asc ED,"vANDE'S rEBELS ARE",LF,"FIGHTING FOR FREEDOM",LF
             .asc "AND EQUALITY AGAINST",LF,"THE TECHNO-REGIME,",LF
             .asc "THE pREW. tHEY'VE",LF,"VOWED TO FOLLOW vANDE",LF
             .asc "TO DEATH OR VICTORY.",ED
-iMedic:     .asc "mEDIC",ED,"tHE MEDIC IS WORKING",LF,"FEVERISHLY ABOVE A",LF
+iMedic:     .asc ED,"tHE MEDIC IS WORKING",LF,"FEVERISHLY ABOVE A",LF
             .asc "PATIENT THAT YOU",LF,"RECOGNIZE AS THE",LF
             .asc "rEBEL lEADER vANDE.",ED
-iVande:     .asc "vANDE",ED,"vANDE HAS BEEN",LF,"PIERCED THROUGH THE",LF
+iVande:     .asc ED,"vANDE HAS BEEN",LF,"PIERCED THROUGH THE",LF
             .asc "HEART WITH AN ENERGY",LF,"WEAPON BLAST. yOU",LF
             .asc "KNOW SHE REIGNS BY",LF,"TERROR FOR THE NEXT",LF
             .asc "70 YEARS, BUT TODAY",LF,"SHE LOOKS VULNERABLE",LF
             .asc "AND... MORTAL.",ED
-iPrinter:   .asc "op",ED,"tHE HEIGHT OF 35TH",LF
+iPrinter:   .asc ED,"tHE HEIGHT OF 35TH",LF
             .asc "CENTURY MEDICINE, THE",LF
             .asc "PRINTER ALLOWS ONE TO",LF,"scan A SOURCE OF dna,",LF
             .asc "AND THEN enter THE",LF,"NAME OF THE ORGAN TO",LF
             .asc "BE GENERATED.",ED
-iActPrint:  .asc "op-arm",ED,"tHE ORGAN PRINTER",LF,
+iActPrint:  .asc ED,"tHE ORGAN PRINTER",LF,
             .asc "BEEPS SOFTLY, WAITING",LF,"FOR SOMEBODY TO enter",LF
             .asc "WHAT ORGAN TO",LF,"GENERATE.",ED
 iHelm:      .asc "vANDE'S helm",ED,"mADE OF PURE",LF,"mERETZKIUM, THE hELM",LF
             .asc "IS A TREASURED",LF,"ARTIFACT OF THE",LF,"rEVOLUTION.",LF,LF
             .asc "iT'S NOT LIKE IT",LF,"HELPED vANDE MUCH,",LF,"ANYWAY.",ED
-iBureau:    .asc "B",ED,"tHIS IS A FINE, DARK",LF,"MOHOGANY BUREAU.",LF,LF
+iBureau:    .asc ED,"tHIS IS A FINE, DARK",LF,"MOHOGANY BUREAU.",LF,LF
             .asc "yOU'VE GOT ONE JUST",LF,"LIKE IT AT HOME THAT",LF,
             .asc "YOU LIBERATED FROM",LF,"nAPOLEON.",LF,LF
-            .asc "iT'S NOT LOCKED OR",LF,"ANYTHING.",ED
-iClock:     .asc "C",ED,"sTANDING A STATELY 3M",LF,"TALL, THIS gERMAN",LF
+            .asc "iT'S NOT LOCKED AND",LF,"WILL open EASILY.",ED
+iClock:     .asc ED,"sTANDING A STATELY 3M",LF,"TALL, THIS gERMAN",LF
             .asc "CLOCK'S MOVEMENT CAN",LF,"BE HEARD THROUGHOUT",LF
             .asc "THE QUIET HOME.",LF,LF,"iTS FACE IS COVERED",LF
             .asc "WITH CARVINGS OF",LF,"BIRDS AND READS",ED
-iWarnSign:  .asc "S",ED,"   bubble to remain",LF,LF,"   unbroken  during",LF,LF
+iWarnSign:  .asc ED,"   bubble to remain",LF,LF,"   unbroken  during",LF,LF
             .asc "   business   hours",LF,LF,"   alarm will sound",LF,LF
             .asc "   if opened",ED
 
@@ -591,35 +593,43 @@ iWarnSign:  .asc "S",ED,"   bubble to remain",LF,LF,"   unbroken  during",LF,LF
 ActVerb:    .byte 7,8,EV,9,9,3, 3,  7,10, 10,10,EV, 9,11,EV,12,12,12 ; 0-17
             .byte EV, 9,13,2,2,2,2,2,2,2,                            ; 18-27
             .byte 14, 9,16,15,15,EV,17, 7,11,18,EV, 2, 9, 7, 7, 7    ; 28-43
-            .byte 16,15,EV,18,18,18,16,16,EV,EV,EV,19,13,13,EV,EV,ED                                 
+            .byte 16,15,EV,18,18,18,16,16,EV,EV,EV,19,13,13,EV,EV,EV ; 44-60
+            .byte 20,20,ED                               
 ActItem:    .byte 3,4,0, 7,9,8, 8, 12,10,  4, 0,0 ,16,14, 0,13,13,13
             .byte 0, 21,22,24,24,24,24,24,24,24
             .byte 0, 32,31,34, 0, 0,35,42, 8, 0, 0,43,45,48,49,50
-            .byte 30,31, 0,12,48,42,54, 0, 0, 0, 0, 0,56,56, 0, 0
+            .byte 30,31, 0,12,48,42,54, 0, 0, 0, 0, 0,56,56, 0, 0, 0
+            .byte 29,52
 ActInRoom:  .byte 0,0,0, 0,0,0, 0,  6, 6,  6, 6,0,  0, 9, 0,11,11,11
             .byte 0,  0, 0,16,17,18,19,20,21,22
             .byte 0,  0,24,25,25, 0, 0, 9, 6, 0, 0,33, 0,48,50,50
-            .byte 50,50, 0, 0, 0, 0,50,50,48,48, 0, 0, 8, 8,11, 0
+            .byte 50,50, 0, 0, 0, 0,50,50,48,48, 0, 0, 8, 8,11, 0, 0
+            .byte  0, 0
 ActInvCon:  .byte 0,4,0, 0,0,0, 0,  0,10,  4, 0,0,  0,15, 0, 0,17, 0
             .byte 13, 0, 0,0,0,0,0,0,0,0
             .byte 0,  0,31, 0, 0, 0,35,14, 0, 0, 0, 0, 0, 0, 0, 0
-            .byte 30,30, 0, 0, 0, 0, 0,0 ,52, 0, 0,10, 0, 0, 0, 0
+            .byte 30,30, 0, 0, 0, 0, 0,0 ,52,52, 0,10, 0, 0, 0, 0, 0
+            .byte 29,52
 ActRoomCon: .byte 3,0,0, 1,1,11,12, 0,12, 12,12,0 , 1, 0, 0,20,19,19
             .byte 0,  1,22,0,0,0,0,0,0,0
-            .byte 0,  1, 0, 0, 1, 0, 0, 0, 0, 0, 0,44, 1, 0, 0, 0
-            .byte 51,53, 0,12,48,42, 0, 1, 4, 0, 0, 0, 0, 0,19, 0
+            .byte 0,  1, 0, 0, 1, 0, 0, 0,12, 0, 0,44, 1, 0, 0, 0
+            .byte 51,53, 0,12,48,42, 0, 1, 4, 0, 0, 0, 0, 0,19, 0, 0
+            .byte 0,  0
 ActInvExcl: .byte 0,1,0, 0,0,8, 8,  8, 8,  8, 8,14, 0, 0, 0,0,  0, 0
             .byte 0,  0, 0,0,0,0,0,0,0,0
             .byte 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-            .byte 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0
+            .byte 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,10
+            .byte 0,  0
 ActFrom:    .byte 1,0,0, 0,0,11,1,  1, 10, 4, 1,0 , 0,15,18,1, 17,19
             .byte 0,  0, 1,1,1,1,1,1,1,1
             .byte 1,  0, 0, 0, 1, 1, 1, 1, 1, 1, 0,44, 0, 1, 1, 1
-            .byte 51,30, 0, 1, 0, 0, 1,1,  4,55, 0, 1,15,56, 1, 1
+            .byte 51,30, 0, 1, 0, 0, 1,1,  4,55, 0, 1,15,56, 1, 1, 0
+            .byte 1,  1
 ActTo:      .byte 1,1,0, 4,0,12,1,  1, 8,  8, 1,9 , 9,14,19,1, 13,20
             .byte 15,16, 1,1,1,1,1,1,1,1
             .byte 1 ,23,25,26, 1, 1, 1, 1, 1, 1, 0,30,34, 1, 1, 1
-            .byte 53,31, 0, 1, 51,15,1,1, 55, 4, 0, 1, 0,57, 1, 1
+            .byte 53,31, 0, 1, 51,15,1,1, 55, 4, 0, 1, 0,57, 1, 1, 0
+            .byte 1,  1
 ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aJeffOffer,<aJeffAcc,<aJeffAcc,<aJeffDecl
             .byte <aNeedTix,<aX,<aBuyTix,<aBallHit,<aMissed,<aTryCatch,0
@@ -629,7 +639,7 @@ ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aFoundGum,<aX,<aTRebels,<aTMedic,<aTVande,<aPrScan
             .byte <aPrEnter,<aWin,<aAtJeff,<aAtRebels,<aAtBoy,<aScDNA
             .byte <aPrFail,<aStealHelm,0,<aCaught,<aCell,<aRevCoin,0
-            .byte <aBallFly,<aAdEntry
+            .byte <aBallFly,<aAdEntry,<aTrip,<aWear,<aWear
 ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aJeffOffer,>aJeffAcc,>aJeffAcc,>aJeffDecl
             .byte >aNeedTix,>aX,>aBuyTix,>aBallHit,>aMissed,>aTryCatch,0
@@ -639,7 +649,7 @@ ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aFoundGum,>aX,>aTRebels,>aTMedic,>aTVande,>aPrScan
             .byte >aPrEnter,>aWin,>aAtJeff,>aAtRebels,>aAtBoy,>aScDNA
             .byte >aPrFail,>aStealHelm,0,>aCaught,>aCell,>aRevCoin,0
-            .byte >aBallFly,>aAdEntry
+            .byte >aBallFly,>aAdEntry,>aTrip,>aWear,>aWear
             
 ; Action Results
 aBoss:      .asc "'hAVE A GREAT DAY.",LF,LF,"'cAPEK COLLECTS YOUR",LF
@@ -691,7 +701,7 @@ aJeffAcc:   .asc "'wHAT A MARVELOUS",LF,"THING! i DARESAY WE",LF
             .asc "HAVE A DEAL.",LF,LF,"'i'LL HAVE A TABLE",LF
             .asc "BROUGHT UP SO i CAN",LF,"FINISH THIS OTHER",LF
             .asc "PROJECT.'",LF,LF
-            .asc "jEFFERSON HANDS",LF,"YOU HIS DESK.",ED,ED
+            .asc "jEFFERSON HANDS YOU",LF,"HIS DESK WITH A BOW.",ED
 aNeedTix:   .asc "fRECKLE-FACED BOY AT",LF,"THE COUNTER STOPS",LF
             .asc "YOU. 'yOU NEED TO buy",LF,"A TICKET TO GET IN!'",ED
             .asc "'yOU BETTER GET IN,",LF,"bABE'S ON DECK!'",ED
@@ -798,6 +808,14 @@ aAdEntry:   .asc "tHE bOSS ISN'T ALWAYS",LF
             .asc "IN, BUT SHE IS TODAY,",LF,"AND SHE GIVES YOU A",LF
             .asc "SLIGHT NOD AS YOU",LF,"EXIT THE vERTI-tUBE.",LF,LF
             .asc "'dAMN BUSY DAY,",LF,"AHEAD,' SHE SAYS.",ED,ED
+aTrip:      .asc "yOU FEEL YOUR FOOTING",LF,"GIVE OUT AS YOU",LF
+            .asc "NAVIGATE A STEEP",LF,"GRADIENT IN COMPLETE",LF
+            .asc "DARKNESS.",LF,LF
+            .asc "uNABLE TO FIND YOUR",LF,"REEL, YOU WRITHE ON",LF
+            .asc "ON THE GROUND IN",LF,"PAIN, REALIZING THAT",LF
+            .asc "THAT IT WILL BE",LF,"HOURS BEFORE THE",LF
+            .asc "bOSS COMES TO YOUR",LF,"RESCUE...",ED,ED
+aWear:      .asc "iT DOES NOT FIT.",ED,COL_ALERT,"YOU DON'T HAVE THAT.",ED       
             
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; TIMERS
@@ -812,11 +830,11 @@ aAdEntry:   .asc "tHE bOSS ISN'T ALWAYS",LF
 ;              ALWAYS when entering the room (1)?
 ;
 ; Memory is allocated to keep track of 112 Timers
-TimerInit:  .asc 1,  1 , 1, 1, 5, 1, 1, 1, 1, 8, 1, 1,ED
-TimerRoom:  .asc 1,  3 ,12,10,10,14,23,48,48,48,11, 2
-TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-TimerAct:   .asc 38, 2, 18,18,14,11,33,52,53,54,58,59
-TimerSeen:  .asc 0,  0,  1, 1, 0, 0, 0, 1, 1, 1, 1, 0
+TimerInit:  .asc 1,  1 , 1, 1, 5, 1, 1, 1, 1, 8, 1, 1, 1,ED
+TimerRoom:  .asc 1,  3 ,12,10,10,14,23,48,48,48,11, 2,19
+TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+TimerAct:   .asc 38, 2, 18,18,14,11,33,52,53,54,58,59,60
+TimerSeen:  .asc 0,  0,  1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0
 TimerDir:   .asc $01 ; Timer 0 direction ($01 = +1, $ff = -1)
 TimerTgt:   .asc 240 ; Timer 0 target (at which action happens)
 TimerOffst: .asc 13  ; Display time offset for Timer 0
