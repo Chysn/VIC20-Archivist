@@ -30,14 +30,14 @@ ACT_FAILURE = $a8               ; At least one action failed
 TEMP        = $a9               ; Temporary values (3 bytes)
 FROM_ID     = $ac               ; From ID during transform
 TO_ID       = $ad               ; To ID during transform
-GAMEOVER    = $ae               ; Flag if game is over
-RM          = $b0               ; Room address (2 bytes)
+SCORE       = $ae               ; Score (number of scored items in SCORE_RM)
+RM          = $af               ; Room address (2 bytes)
 BUFFER      = $0220             ; Input buffer
 SEEN_ROOMS  = $1c00             ; Marked as 1 when entered (128 bytes)
 INVENTORY   = $1c80             ; Item IDs in Inventory (16 bytes)
 TIMERS      = $1c90             ; Room timer countdown values (112 bytes)
 ITEM_ROOMS  = $1d00             ; RAM storage for item rooms (256 bytes)
-SCORE       = $1dfe             ; Score (number of scored items in SCORE_RM)
+GAMEOVER    = $1dfe             ; Flag if game is over
 CURR_ROOM   = $1dff             ; Current room
 
 ; Operating System Memory Locations
@@ -112,19 +112,18 @@ NewStory:   lda #SCRCOL         ; Set screen color
             sta VIC+$05         ; ,,
             lda #$80            ; Disable Commodore-Shift
             sta CASECT          ; ,,          
-            ldx #0
+            ldx #0              ; Initialize all 512 bytes of game status
+            lda #0              ;   inventory (16 bytes), seen rooms (126 bytes)
+-loop:      sta SEEN_ROOMS,x    ;   timers (112 bytes), score (1 byte)
+            sta ITEM_ROOMS,x    ;   game over status (1 byte), item locations
+            dex                 ;   (256 bytes)
+            bne loop            ;   ,,
             stx KBSIZE          ; Clear keyboard buffer
-            stx GAMEOVER        ; Game is not over
 -loop:      inx                 ; Copy initial room location data to     
             lda ItemRoom-1,x    ;   RAM, so it can be updated as items are
             sta ITEM_ROOMS-1,x  ;   moved around
             lda Item1-1,x       ; Check for last item
             bne loop            ;   If not the last item, keep going
-            ldx #0              ; Clear seen rooms (126 bytes), 
-            lda #0              ;   inventory (16 bytes),
--loop:      sta SEEN_ROOMS,x    ;   and timers (112 bytes)
-            inx                 ;   and score (1 byte)
-            bne loop            ;   ,,
             ldx #$0f            ; Set up starting inventory
 -loop:      lda StartInv,x      ; ,,
             sta INVENTORY,x     ; ,,
@@ -382,7 +381,7 @@ drop_now:   tax                 ; X is the item index
             cmp #SCORE_TGT      ; ,,
             bne drop_conf       ; ,,
             ldx #SCORE_ACT      ; If so, trigger the score action
-            jsr DoEvent         ; ,,
+            jsr DoEvent         ; ,,            
 drop_conf:  jmp Confirm         ; Show the confirmation message
 drop_r:     jmp Main            ; Return to Main routine
 
@@ -446,6 +445,8 @@ look_r:     jmp Main            ; Return to Main routine
 DoGo:       ldx #0              ; Starting from the first character,
             jsr GetPattern      ;   skip the first pattern (GO/MOVE)
             jsr GetPattern      ;   and get the second
+            lda PATTERN         ; If no direction pattern was provided,
+            beq no_dir          ;   get clarification
 ShortGo:    ldy #5              ; 5 is room index for North parameter
 -loop:      lda Directions,y    ; A is character for direction
             cmp PATTERN         ; Is this the attempted direction?
@@ -473,6 +474,9 @@ go_fail:    jsr IsLight         ; Failed to move. If there's light in the room
             bcs sees_path       ;   the player can see that they've moved
             jsr Linefeed        ; If it's dark, simply complain about it
             jmp ShowNoSee       ; ,,
+no_dir:     lda #<NoDirTx       ; No direction was provided, so ask for one
+            ldy #>NoDirTx       ; ,,
+            jmp PrintRet        ; ,,
 sees_path:  lda #<NoPathTx      ; Show "no path" message and return to Main
             ldy #>NoPathTx      ; ,,
 PrintRet:   jsr PrintMsg        ; ,,
@@ -656,11 +660,14 @@ ch_room_t:  ldx #$ff            ; Check Room Timers. X is the Room Timer ID
             cmp TimerRoom,x     ;   Is the timer in this room?
             bne loop            ;   If not, get next Room Timer            
             tay                 ; Y=CURR_ROOM. Should timer be initialized?
-            lda TimerSeen,x     ;   If TimerSeen is 1, then always init
-            bne init_timer      ;   ,,
-            lda SEEN_ROOMS-1,y  ;   If TimerSeen is 0, then only init
-            bne loop            ;     first time room is seen
-init_timer: lda TimerInit,x     ; Initialize the timer countdown
+            lda TimerSeen,x     ;   ,,
+            cmp #2              ;   If TimerSeen is 2, then always init
+            beq init_timer      ;   ,,
+            cmp SEEN_ROOMS-1,y  ;   If TimerSeen=0, the first time
+            bne loop            ;   If TimerSeen=1, second and subsequent times
+init_timer: lda TIMERS,x        ; If the timer is already started, don't
+            bne loop            ;   start it again
+            lda TimerInit,x     ; Initialize the timer countdown
             sta TIMERS,x        ; ,,
             bne loop            ; Go back for additional timers
 moveto_r:   jsr AdvTimers
@@ -793,14 +800,14 @@ dir_end:    lda #BACKSP
             ; Fall through to ShowScore
 
 ; Show Score
-ShowScore:  ldx #0              ; X is the item index
-            stx SCORE           ; And reset score
-            lda CURR_ROOM       ; Score is only shown in the score room
+ShowScore:  lda CURR_ROOM       ; Score is only shown in the score room
             cmp #SCORE_RM       ; ,,
             bne score_r         ; ,,
+CheckScore: ldx #0              ; X is the item index
+            stx SCORE           ; And reset score
 -loop:      inx                 ; For each item
             lda Item1-1,x       ;   End of items?
-            beq CheckScore      ;   ,,
+            beq score_out       ;   ,,
             lda ItemProp-1,x    ;   Is it a scored item?
             and #IS_SCORED      ;   ,,
             beq loop            ;   ,,
@@ -809,7 +816,7 @@ ShowScore:  ldx #0              ; X is the item index
             bne loop            ;   ,,  
             inc SCORE           ; Increment score if it qualifies  
             bne loop          
-CheckScore: ldx SCORE           ; If there's no score, don't display
+score_out:  ldx SCORE           ; If there's no score, don't display
             beq score_r         ; ,,
             jsr NormCol         ; Print the score test
             lda #<ScoreTx       ; ,,
@@ -823,7 +830,7 @@ CheckScore: ldx SCORE           ; If there's no score, don't display
             ldx #SCORE_TGT      ; And now show the target score
             lda #0              ; ,,
             jsr PRTFIX          ; ,,        
-            jsr Linefeed
+            jsr Linefeed        ; ,,
 score_r:    rts
  
 ; Is Light
