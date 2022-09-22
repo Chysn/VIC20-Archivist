@@ -54,7 +54,7 @@ MAX_INV     = 3
 ; Text - Game Messages, Errors, etc.
 Intro:      .asc CLRHOME,COL_NORM,"yOU ARRIVE AT WORK",LF,"IN THE USUAL WAY, BY"
             .asc LF,"CURSOR. aFTER ALL,",LF,"YOU LIVE IN 1841. yOU",LF
-            .asc "ONLY WORK IN 6205.",LF,LF,"yOU STRAIGHEN YOUR",LF
+            .asc "ONLY WORK IN 6205.",LF,LF,"yOU STRAIGHTEN YOUR",LF
             .asc "GLASSES AND GLANCE AT",LF,"THE JOB SCREEN.",LF,LF
             .asc "dAMN BUSY DAY AHEAD.",LF,LF,
             .asc 28,"tHE aRCHIVIST",LF,LF
@@ -203,7 +203,7 @@ rOffice:    .asc "aDMIN oFFICE",ED,"tHIS IS A TYPICAL",LF
             .asc "NO LONG REQUIRES",LF
             .asc "EQUIPMENT.",LF,LF
             .asc "tHE bOSS IS STANDING",LF,"AGAINST A WALL, EYES",LF
-            .asc "CLOSED, BUT YOU KNOW",LF,"SHE'S HARD AT WORK.",LF,LF
+            .asc "CLOSED, HARD AT WORK.",LF,LF
             .asc "a RED SIGN HANGS ON",LF,"THE DOOR TO THE EAST.",ED
 rPlaza:     .asc "pLAZA",ED,ED
 
@@ -425,9 +425,9 @@ iConsole:   .asc ED,"yOU'D IMAGINE THEY'D",LF
 iBoss:      .asc ED,"tHE bOSS LOOKS LIKE A",LF
             .asc "MIDDLE-AGED WOMAN",LF,"IN A VIOLET LAB COAT,",LF
             .asc "BUT YOU KNOW SHE'S",LF
-            .asc "BEEN DOING THIS FOR A",LF,"HUNDRED YEARS. sHE'S",LF
-            .asc "WORKING MENTALLY AT",LF,"THE MOMENT, BUT YOU",LF
-            .asc "KNOW YOU CAN ALWAYS",LF,"talk TO HER.",ED
+            .asc "BEEN DOING THIS FOR A",LF,"HUNDRED YEARS.",LF,LF
+            .asc "sHE'S WORKING",LF,"MENTALLY AT THE",LF,
+            .asc "MOMENT, BUT YOU CAN",LF,"ALWAYS talk TO HER.",ED
 iReel:      .asc "tEMPORAL reel",ED,"tHE REEL IS THE",LF
             .asc "REMOTE COUNTERPART OF",LF,"THE CURSOR. iT'S A",LF
             .asc "PALM-SIZED WHEEL WITH",LF,"A PARALLEL SMALLER",LF
@@ -725,7 +725,7 @@ aJeffAcc:   .asc "'wHAT A MARVELOUS",LF,"THING! i DARESAY WE",LF
             .asc "HAVE A DEAL.",LF,LF,"'i'LL HAVE A TABLE",LF
             .asc "BROUGHT UP SO i CAN",LF,"FINISH THIS OTHER",LF
             .asc "PROJECT.'",LF,LF
-            .asc "jEFFERSON HANDS YOU",LF,"HIS DESK WITH A BOW.",ED
+            .asc "jEFFERSON HANDS YOU",LF,"HIS DESK WITH A BOW.",ED,ED
 aNeedTix:   .asc "fRECKLE-FACED BOY AT",LF,"THE COUNTER STOPS",LF
             .asc "YOU. 'yOU NEED TO buy",LF,"A TICKET TO GET IN!'",ED
             .asc "'yOU BETTER GET IN,",LF,"bABE'S ON DECK!'",ED
@@ -808,7 +808,7 @@ aAtJeff:    .asc "fOR EXAMPLE, IN LIKE",LF,"TWO SECONDS YOUR FACE",LF
             .asc "CITIZENS.'",ED,ED
 aAtBoy:     .asc "fOR EXAMPLE, YOU",LF,"SUDDENLY FIND",LF
             .asc "YOURSELF SURROUNDED",LF,"BY THREE dETROIT",LF
-            .asc "POLICE OFFICERS TO",LF,"RENDER YOU IMMOBILE,",LF
+            .asc "POLICE OFFICERS WHO",LF,"RENDER YOU IMMOBILE,",LF
             .asc "AND THEN...",ED,ED
 aAtRebels:  .asc "fOR EXAMPLE, THESE",LF,"REBELS, WHO'VE",LF
             .asc "ALREADY HAD A REALLY",LF,"BAD DAY, EASILY",LF
