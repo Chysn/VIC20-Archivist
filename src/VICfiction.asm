@@ -31,7 +31,7 @@ TEMP        = $a9               ; Temporary values (3 bytes)
 FROM_ID     = $ac               ; From ID during transform
 TO_ID       = $ad               ; To ID during transform
 SCORE       = $ae               ; Score (number of scored items in SCORE_RM)
-RM          = $af               ; Room address (2 bytes)
+RM          = $fb               ; Room address (2 bytes)
 BUFFER      = $0220             ; Input buffer
 SEEN_ROOMS  = $1c00             ; Marked as 1 when entered (128 bytes)
 INVENTORY   = $1c80             ; Item IDs in Inventory (16 bytes)
@@ -96,8 +96,10 @@ Init:       jsr $fd8d           ; Test RAM, initialize VIC chip
             jsr $fd52           ; Restore default I/O vectors
             jsr $fdf9           ; Initialize I/O registers
             jsr $e518           ; Initialize hardware
-            lda #$19            ; Set string descriptor pointer, to avoid
+            lda #$19            ; Set string descriptor pointer, to avoid            
             sta $16             ;   conflicts with zero page addresses
+            lda #$80            ; Turn control messages on for tape
+            sta $9d             ; ,,
             lda #<NMI           ; Install the custom NMI handler, which does
             sta NMINV           ;   absolutely nothing.
             lda #>NMI           ;   ,,
@@ -171,8 +173,10 @@ enter:      jsr CHROUT          ; Print the RETURN
             cmp #'*'            ; System command
             bne ch_sp           ; ,,
             jmp System          ; ,,
-ch_sp:      cmp #' '            ; If space, then the user just hit
-            beq Main            ;   RETURN
+ch_sp:      ldx #0
+            jsr GetPattern
+            lda PATTERN
+            beq Main
             lda GAMEOVER        ; If game is over, allow only system
             bne Main            ;   commands
             ; Fall through to Transcribe
@@ -287,29 +291,31 @@ xform:      sta TO_ID
             cmp FROM_ID         ;   If from and to are the same, no transform
             beq eval_r          ;   ,,
 
-            ; If the FROM item is in inventory, replace it with the TO item           
+            ; If the FROM item is in inventory, it leaves inventory 
             ldy #MAX_INV        ; Check if inventory needs to be transformed
 -loop:      dey                 ;   ,,
             bmi ch_rooms        ;   ,,
             lda INVENTORY,y     ; Is the item here?
             cmp FROM_ID         ;   ,, 
-            bne loop            ;   ,, Loop until found            
-            lda TO_ID           ; Yes, perform transformation
+            bne loop            ;   ,, Loop until found   
+            lda #0              ; Remove FROM item from inventory
             sta INVENTORY,y     ; ,,
-            sty TEMP            ; Y goes from inventory index to TO ID
-            ldy TO_ID           ; ,,
-            lda ItemProp-1,y    ; If the TO item is a Placeholder, it cannot
-            and #IS_PLHOLDER    ;   be in inventory. In this case, remove the
-            beq rm_from         ;   item from inventory, and leave the
-            lda #0              ;   placeholder where it is.
-            ldy TEMP            ; Y goes back to inventory index
-            sta INVENTORY,y     ;   ,,
-            beq inv_r           ;   ,,
-rm_from:    ldy FROM_ID         ; The FROM item leaves the board
-            lda #0              ; ,,
+            lda TO_ID           ; Now put the TO ID into inventory
             sta INVENTORY,y     ; ,,
-inv_r:      rts                 ; Finish evaluating
-
+            sty TEMP            ; Y is now the TO Item ID
+            tay                 ;
+            lda ItemProp-1,y    ; Is this item a placeholder?
+            and #IS_PLHOLDER    ; ,,
+            beq ch_rooms        ; ,,
+            ldy TEMP
+            lda #0              ; A placeholder is not permitted in inventory,
+            sta INVENTORY,y     ;   so remove it
+            ldy TO_ID           ; Put the item removed from inventory in the
+            lda ITEM_ROOMS-1,y  ;   placeholder's location.
+            ldy FROM_ID         ; (This is backwards from the usual way, but
+            sta ITEM_ROOMS-1,y  ;   makes placeholders work.)
+            rts
+                                             
             ; Move TO item to where FROM item is and set FROM item to Nowhere
             ; if the FROM item was not found in inventory
 ch_rooms:   ldy FROM_ID         ;   Get the From item's current location
@@ -545,7 +551,7 @@ GetPattern: lda #0
 -loop:      lda BUFFER,x        ; Trim leading spaces by ignoring them
             beq pattern_r       ; ,,
             inx                 ; ,,
-            cmp #SPACE          ; ,,
+            cmp #' '            ; ,,
             beq loop            ; ,,
             sta PATTERN         ; Put the first character into the pattern
             sta PATTERN+1       ; ,,
@@ -925,7 +931,10 @@ Save:       ldx #1              ; DEVICE=1 CASSETTE
             jsr SAVE            ; Save
             jsr Linefeed
             jmp Main
-            
+
+; Load
+; From cassette, using the filename specified as SaveFile in the
+; Story File        
 Load:       ldx #1              ; Tape device number
             ldy #1              ; Load to header location
             jsr SETLFS          ; ,,
@@ -941,9 +950,10 @@ post_load:  jsr SetRoomAd       ; Set the (RM) pointer
             jsr Linefeed        ; ,,
             jsr RoomName        ; ,,
             jsr PrintMsg        ; ,,       
-            lda #0              ; Set item ID so it's a full-room
-            sta ITEM_ID         ;   Look, and then
-            jmp DoLook          ;   do that.
+            lda #0              ; Set Item ID and clear PATTERN, so it's
+            sta ITEM_ID         ;   DoLook is treated as a look at the room
+            sta PATTERN         ;   ,,
+            jmp DoLook          ; Look at the room
             
 SetName:    lda #EON-SaveFile   ; File name length
             ldx #<SaveFile      ; Set filename

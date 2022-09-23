@@ -192,9 +192,9 @@ Rooms:      ; Main Facility (1-3)
 ;     also terminated by ED
 rIntake:    .asc "iNTAKE rOOM",ED,"tHIS CIRCULAR ROOM IS",LF
             .asc "YOUR HOME BASE AT",LF,"WORK. a SCREEN WRAPS",LF
-            .asc "AROUND THE WALL.",LF,LF
+            .asc "AROUND THE WALL IN",LF,"LIEU OF WINDOWS.",LF,LF
             .asc "tHE CURSOR DOMINATES",LF
-            .asc "THE CENTER OF THE",LF,"SPACE. tHE CONSOLE IS",LF
+            .asc "THE CENTER OF THE",LF,"SPACE. iTS CONSOLE IS",LF
             .asc "ABOUT A METER AWAY.",LF,LF,"a vERTI-tUBE LEADS",LF
             .asc "DOWN TO aDMIN.",ED
 rOffice:    .asc "aDMIN oFFICE",ED,"tHIS IS A TYPICAL",LF
@@ -249,7 +249,7 @@ rHomeSt:    .asc "hOME pLATE sTANDS",ED,"tHE GREEN OF THE",LF
             .asc "OF THE ALMONDS.",LF,LF,"lEFT fIELD IS TO THE",LF
             .asc "WEST, AND rIGHT fIELD",LF,"TO THE EAST.",LF,LF
             .asc "a SMALL CONCESSION",LF,"STAND IS NORTH",ED
-rRightF:    .asc "rIGHT fIELD sTANDS",ED,"tHE CROWD ROARS.",ED
+rRightF:    .asc "rIGHT fIELD bLEACHERS",ED,"tHE CROWD ROARS.",ED
 rCenterF:   .asc "cENTER fIELD sTANDS",ED,"tHE CROWD OUT HERE IS",LF
             .asc "RAUCOUS, EVEN FOR",LF,"dETROIT. yOU'RE",LF
             .asc "ENJOYING THE",LF,"ATMOSPHERE BUT YOU",LF
@@ -259,13 +259,12 @@ rLeftF:     .asc "lEFT fIELD sTANDS",ED,"eVERYBODY IS",LF
             .asc "GLOVES PACK THE",LF,"STANDS. yOU KNOW",LF
             .asc "THEY'LL SOON BE SAD",LF,"ABOUT BEING ON THE",LF
             .asc "WRONG SIDE OF THE",LF,"PARK.",ED
-rCorridor:  .asc "cORRIDOR",ED,"sTANDS ARE TO THE",LF,"NORTH, a CONCESSION",LF
-            .asc "STAND TO THE WEST.",ED
-rConces:    .asc "cONCESSION sTAND",ED,"a SMALL TENT WITH AN",LF
+rCorridor:  .asc "cORRIDOR",ED,"sTANDS ARE TO THE",LF,"NORTH.",ED
+rConces:    .asc "cONCESSION sTAND",ED,"a WOOD STAND WITH AN",LF
             .asc "ORANGE AWNING OFFERS",LF,"COMPLEMENTARY",LF
             .asc "REFRESHMENTS. tAKE",LF,"SOME!",ED
 rJail:      .asc "dETROIT jAIL",ED,"tHE CELL IS LIKE",LF
-            .asc "1.5x1.5M. iT'S SUPER",LF,"EMBARASSING.",LF,LF
+            .asc "1.5M BY 1.5M. iT'S",LF,"SUPER EMBARRASSING.",LF,LF
             .asc "oNE HOPES YOU HAVE",LF,"YOUR REEL.",ED
 rAnteCh:    .asc "aNTECHAMBER",ED,"tOMB OF nEFERTARI,",LF
             .asc "vALLEY OF THE qUEENS,",LF,"lUXOR.",LF,LF
@@ -374,22 +373,22 @@ Item1:      .byte 'C','C','B','R','S','W','1','D','1','I','*','J','B' ; (1-13)
             .byte 'T','C','1','G','*','*','*','1','S','P','I','N','P' ; (14-26)
             .byte 'B','F','S','G','E','2','K','4','G','W','W','W','T' ; (27-39)
             .byte 'T','T','B','T','*','3','G','B','R','M','V','P','H' ; (40-52)
-            .byte 'P','D','*','B','B','C','S','P','J',ED
+            .byte 'P','D','*','B','B','C','S','P','J','M','F',ED
 ItemL:      .byte 'R','E','S','L','N','H','6','K','1','E','*','N','L'
             .byte 'T','N','4','E','*','*','*','C','S','E','S','E','T'
             .byte 'T','S','L','M','E','2','D','2','R','H','H','H','S'
             .byte 'S','S','Y','E','*','9','N','E','S','C','E','R','M'
-            .byte 'R','A','*','U','U','K','N','S','S'
+            .byte 'R','A','*','U','U','K','N','S','S','N','N'
 ItemRoom:   .byte  1 , 1,  2 , 2 , 1 , 0,  1 , 6 , 1 ,23 , 6 , 0 , 0
             .byte  0 , 0,  1 ,13 ,11 , 0,  0 , 1 ,19 ,21 , 0 , 21,20
             .byte 21 ,20, 20 , 0 , 0 , 1, 25 , 25,32 ,29 ,28 , 32,29
             .byte 28 ,32,  9 ,33, 33 , 0, 35 , 35,48 ,50 ,50 , 50,50
-            .byte  0,  0, 47 , 8,  0 , 7,  2 , 52,52
+            .byte  0,  0, 47 , 8,  0 , 7,  2 , 52,52 ,23 ,11
 ItemProp:   .byte  3 , 3,  3 , 0,  3 , 8,  3 ,$40, 3 ,$88, 7 , 2 ,$40
             .byte  0 , 0,  3 , 1 , 7 , 7,  7 , 3,  2 , 0 ,35 , 0 , 0
             .byte  0 , 2,$40 , 0 , 0 , 3,  3 , 3,$40 , 3 , 3 , 3 , 0
             .byte  0 , 0,  3 , 3 , 7 , 3,  0 , 0,  3 , 3 , 3 , 3, $40
-            .byte  3 , 3,  7 , 3 , 3 ,11,  3 , 0,  0
+            .byte  3 , 3,  7 , 3 , 3 ,11,  3 , 0,  0 , 3 , 3
 ItemTxtL:   .byte <iCursor,<iConsole,<iBoss,<iReel,<iQuota,<iWatch,<iYear
             .byte <iDesk,<iYear,<iPhone,0,<iJefferson,<iBall,<iTicket
             .byte <iSixpence,<iYear,<iGlove,0,0,0,<iYear,<iSarc,<iPlaque
@@ -398,6 +397,7 @@ ItemTxtL:   .byte <iCursor,<iConsole,<iBoss,<iReel,<iQuota,<iWatch,<iYear
             .byte <iT,<iT,<iT,<iBoy,<iTable,0,<iYear,<iGreenTot,<iBlueTot
             .byte <iRebels,<iMedic,<iVande,<iPrinter,<iHelm,<iActPrint,0,0
             .byte <iBureau,<iBureau,<iClock,<iWarnSign,<iPeanuts,<iJacks
+            .byte <iMan,<iFan
 ItemTxtH:   .byte >iCursor,>iConsole,>iBoss,>iReel,>iQuota,>iWatch,>iYear
             .byte >iDesk,>iYear,>iPhone,0,>iJefferson,>iBall,>iTicket
             .byte >iSixpence,>iYear,>iGlove,0,0,0,>iYear,>iSarc,>iPlaque
@@ -406,6 +406,7 @@ ItemTxtH:   .byte >iCursor,>iConsole,>iBoss,>iReel,>iQuota,>iWatch,>iYear
             .byte >iT,>iT,>iT,>iBoy,>iTable,0,>iYear,>iGreenTot,>iBlueTot
             .byte >iRebels,>iMedic,>iVande,>iPrinter,>iHelm,>iActPrint,0,0
             .byte >iBureau,>iBureau,>iClock,>iWarnSign,>iPeanuts,>iJacks
+            .byte >iMan,>iFan
 
 ; Item Descriptions
 iCursor:    .asc ED,"tHE CURSOR EVOKES A",LF
@@ -436,11 +437,11 @@ iReel:      .asc "tEMPORAL reel",ED,"tHE REEL IS THE",LF
             .asc "yOU OPERATE IT BY",LF,"windING IT.",ED
 iQuota:     .asc ED
             .asc "    ",176,192,"dUE tODAY",192,174,LF
-            .asc "    ",221,    "  * 1255bc ",221,LF
-            .asc "    ",221,    "  * 1776   ",221,LF
-            .asc "    ",221,    "  * 1934   ",221,LF
-            .asc "    ",221,    "  * 2022   ",221,LF
-            .asc "    ",221,    "  * 3449   ",221,LF
+            .asc "    ",221,    "  ",190,"1255bc  ",221,LF
+            .asc "    ",221,    "  ",190,"1776    ",221,LF
+            .asc "    ",221,    "  ",190,"1934    ",221,LF
+            .asc "    ",221,    "  ",190,"2022    ",221,LF
+            .asc "    ",221,    "  ",190,"3449    ",221,LF
             .asc "    ",173,192,192,192,192,192,192,192,192,192,192,192,189,ED
 iWatch:     .asc "pOCKET watch",ED,"18TH cENTURY. a GIFT",LF
             .asc "FROM dAD. oRNATE.",LF,LF,"yOU USUALLY LEAVE IT",LF
@@ -462,8 +463,8 @@ iPhone:     .asc "IpHONE",ED,"nOT IN THE LEAST",LF,"ANACHRONISTIC, IT'S",LF
 iJefferson: .asc "tHOMAS jefferson",ED,"yES, that jEFFERSON.",ED
 iBall:      .asc "rUTH'S hOME rUN ball",ED,"bABE rUTH HIT HIS",LF
             .asc "700TH HOME RUN WITH",LF,"THIS BASEBALL.",ED
-iTicket:    .asc "bASEBALL ticket",ED,"jULY 14, 1934 tIGERS",LF
-            .asc "VS. yANKEES $1.40",ED
+iTicket:    .asc "bASEBALL ticket",ED,"jULY 14, 1934",LF,"nAVIN fIELD $1.40",LF
+            .asc "gENERAL aDMISSION",ED
 iSixpence:  .asc "sIXPENCE coin",ED,"aN OLD bRITISH COIN,",LF
             .asc "WORTHLESS NOW.",ED
 iGlove:     .asc "bASEBALL glove",ED,"iT'S A TAD SMALL,",LF
@@ -564,12 +565,16 @@ iClock:     .asc ED,"sTANDING A STATELY 3M",LF,"TALL, THIS gERMAN",LF
 iWarnSign:  .asc ED,COL_ALERT,"   bubble to remain",LF,LF,"   unbroken  during"
             .asc LF,LF,"   business   hours",LF,LF,"   alarm will sound",LF,LF
             .asc "   if opened",ED
-iPeanuts:   .asc "pEANUTS",ED,"eXTRA-SALTY LEGUMES!",ED
+iPeanuts:   .asc "pEANUTS",ED,"eXTRA-SALTY!",ED
 iJacks:     .asc "cRACKER jacks",ED,"a FAVORITE BETWEEN",LF,
-            .asc "1896 AND 2220, WHEN",LF,"CORN WENT EXTINCT,",LF
+            .asc "1896 AND 2220, WHEN",LF,"CORN WENT EXTINCT.",LF,LF
             .asc "IT'S BASICALLY",LF,"POPCORN AND PEANUTS",LF,
             .asc "WITH CARAMEL AND,",LF,"FOR SOME REASON,",LF
-            .asc "A TINY METAL CAR.",ED
+            .asc "A TINY METAL HORSE.",ED
+iMan:       .asc ED,"hE'S NO LONGER IN",LF,"VIEW. hE HURRIED INTO",LF
+            .asc "THE ROOM LABELED",LF,"sECURITY.",ED
+iFan:       .asc ED,"tHIS PLACE IS FILLED",LF,"WITH 'EM! aNY",LF
+            .asc "SPECIFIC ONE IS LOST",LF,"IN THE PACK.",ED
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; STORY ACTIONS
@@ -614,44 +619,44 @@ iJacks:     .asc "cRACKER jacks",ED,"a FAVORITE BETWEEN",LF,
 ; actions triggered by events (timer target, enters-room, score target)
 ActVerb:    .byte 7,8,EV,9,9,3, 3,  7,10, 10,10,EV, 9,11,EV,12,12,12 ; 0-17
             .byte EV, 9,13,2,2,2,2,2,2,2,                            ; 18-27
-            .byte 14, 9,16,15,15,EV,17, 7,11,18,EV, 2, 9, 7, 7, 7    ; 28-43
+            .byte 14, 9,16,15,15,EV,17,7, 11,18,EV, 2, 9, 7, 7, 7    ; 28-43
             .byte 16,15,EV,18,18,18,16,16,EV,EV,EV,19,13,13,EV,EV,EV ; 44-60
-            .byte 20,20,21,21,15,EV,ED                          
+            .byte 20,20,21,21,15,EV,18,ED                          
 ActItem:    .byte 3,4,0, 7,9,8, 8, 12,10,  4, 0,0 ,16,14, 0,13,13,13
             .byte 0, 21,22,24,24,24,24,24,24,24
             .byte 0, 32,31,34, 0, 0,35,42, 8, 0, 0,43,45,48,49,50
             .byte 30,31, 0,12,48,42,54, 0, 0, 0, 0, 0,56,56, 0, 0, 0
-            .byte 29,52,60,61, 0, 0
+            .byte 29,52,60,61, 0, 0,63
 ActInRoom:  .byte 0,0,0, 0,0,0, 0,  6, 6,  6, 6,0,  0, 9, 0,11,11,11
             .byte 0,  0, 0,16,17,18,19,20,21,22
             .byte 0,  0,24,25,25, 0, 0, 9, 6, 0, 0,33, 0,48,50,50
             .byte 50,50, 0, 0, 0, 0,50,50,48,48, 0, 0, 8, 8,11, 0, 0
-            .byte  0, 0, 0, 0,25,48
+            .byte  0, 0, 0, 0,25,48,11
 ActInvCon:  .byte 0,4,0, 0,0,0, 0,  0,10,  4, 0,0,  0,15, 0, 0,17, 0
             .byte 13, 0, 0,0,0,0,0,0,0,0
             .byte 0,  0,31, 0, 0, 0,35,14, 0, 0, 0, 0, 0, 0, 0, 0
             .byte 30,30, 0, 0, 0, 0, 0,0 ,52,52, 0,10, 0, 0, 0, 0, 0
-            .byte 29,52,60,61, 0,52
+            .byte 29,52,60,61, 0,52, 0
 ActRoomCon: .byte 3,0,0, 1,1,11,12, 0,12, 12,12,0 , 1, 0, 0,20,19,19
             .byte 0,  1,22,0,0,0,0,0,0,0
             .byte 0,  1, 0, 0, 1, 0, 0, 0,12, 0, 0,44, 1, 0, 0, 0
             .byte 51,53, 0,12,48,42, 0, 1, 4, 0, 0, 0, 0, 0,19, 0, 0
-            .byte 0,  0, 0, 0, 0, 0
+            .byte 0,  0, 0, 0, 0, 0, 0
 ActInvExcl: .byte 0,1,0, 0,0,8, 8,  8, 8,  8, 8,14, 0, 0, 0,0,  0, 0
-            .byte 0,  0, 0,0,0,0,0,0,0,0
+            .byte 0,  0, 0,0,0, 0,  0,  0, 0, 0
             .byte 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             .byte 0, 31, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,10
-            .byte 0,  0, 0, 0, 0, 4
+            .byte 0,  0, 0, 0, 0, 4, 0
 ActFrom:    .byte 1,0,0, 0,0,11,1,  1, 10, 4, 1,0 , 0,15,18,1, 17,19
-            .byte 0,  0, 1,1,1,1,1,1,1,1
+            .byte 0,  0, 1,1,1, 1,  1,  1, 1, 1
             .byte 1,  0, 0, 0, 1, 1, 1, 1, 1, 1, 0,44, 0, 1, 1, 1
-            .byte 51,31, 0, 1, 0, 0, 1,1,  4,55, 0, 1,15,56, 1, 1, 0
-            .byte 1,  1, 1, 1, 0, 1
-ActTo:      .byte 1,1,0, 4,0,12,1,  1, 8,  8, 1,9 , 9,14,19,1, 13,20
+            .byte 51,31, 0, 1, 0, 0, 1, 1, 4,55, 0, 1,15,56, 1, 1, 0
+            .byte 1,  1, 1, 1, 0, 1, 0
+ActTo:      .byte 1,1,0, 4,0,12,1,  1,  8, 8, 1,9 , 9,14,19,1, 13,20
             .byte 15,16, 1,1,1,1,1,1,1,1
             .byte 1 ,23,25,26, 1, 1, 1, 1, 1, 1, 0,30,34, 1, 1, 1
             .byte 53, 0, 0, 1, 51,15,1,1, 55, 4, 0, 1, 0,57, 1, 1, 0
-            .byte 1,  1, 1, 1,53, 1
+            .byte 1,  1, 1, 1,53, 1, 9
 ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aJeffOffer,<aJeffAcc,<aJeffAcc,<aJeffDecl
             .byte <aNeedTix,<aX,<aBuyTix,<aBallHit,<aMissed,<aTryCatch,0
@@ -662,7 +667,7 @@ ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aPrEnter,<aWin,<aAtJeff,<aAtRebels,<aAtBoy,<aScDNA
             .byte <aPrFail,<aStealHelm,0,<aCaught,<aCell,<aRevCoin,0
             .byte <aBallFly,<aAdEntry,<aTrip,<aWear,<aWear,<aYum,<aYum
-            .byte <aLockdown,<aComing
+            .byte <aLockdown,<aComing,<aAtFan
 ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aJeffOffer,>aJeffAcc,>aJeffAcc,>aJeffDecl
             .byte >aNeedTix,>aX,>aBuyTix,>aBallHit,>aMissed,>aTryCatch,0
@@ -673,7 +678,7 @@ ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aPrEnter,>aWin,>aAtJeff,>aAtRebels,>aAtBoy,>aScDNA
             .byte >aPrFail,>aStealHelm,0,>aCaught,>aCell,>aRevCoin,0
             .byte >aBallFly,>aAdEntry,>aTrip,>aWear,>aWear,>aYum,>aYum
-            .byte >aLockdown,>aComing
+            .byte >aLockdown,>aComing,>aAtFan
             
 ; Action Results
 aBoss:      .asc "'hAVE A GREAT DAY.",LF,LF,"'cAPEK COLLECTS YOUR",LF
@@ -685,7 +690,7 @@ aHome:      .asc CLRHOME,"bEING REELED BACK IS",LF,"ALWAYS DISCONCERTING.",LF,LF
             .asc "WEARING A vr HEADSET",LF,"OF A DIFFERENT ROLLER",LF
             .asc "COASTER.",LF,LF,"tHE SENSATION LASTS",LF
             .asc "ONLY A MOMENT AND",LF,"YOU'RE BACK TO YOUR",LF
-            .asc "iNTAKE rOOM.",ED
+            .asc "iNTAKE rOOM.",ED,ED
             .asc "yOU DO NOT HAVE A",LF,"TEMPORAL REEL.",ED
 aDie:       .asc "tHE bOSS RUSHES TO",LF
             .asc "TACKLE YOU BUT IT'S",LF,"TOO LATE. yOU NOTICE",LF
@@ -705,7 +710,7 @@ a1841:      .asc "tHE CURSOR ROARS YOU",LF,"BACK HOME. yOU SMELL",LF
             .asc "IN YOUR DEN. tHE bOSS",LF
             .asc "WON'T BE HAPPY",LF,"ABOUT YOUR LEAVING",LF
             .asc "EARLY.",LF,LF,"tOMORROW'S GOING TO",LF
-            .asc "BE A DAMN BUSY DAY.",ED,"tHERE'S NO CONSOLE.",ED
+            .asc "BE A DAMN BUSY DAY.",ED,"tHERE'S NO CURSOR.",ED
 aJeffEnter: .asc "jUST AS YOU TAKE THE",LF,"LITTLE DESK, A TALL",LF
             .asc "MAN EMERGES FROM",LF,"BEHIND AND WRESTS IT",LF
             .asc "FROM YOUR HANDS.",ED,ED
@@ -726,9 +731,9 @@ aJeffAcc:   .asc "'wHAT A MARVELOUS",LF,"THING! i DARESAY WE",LF
             .asc "BROUGHT UP SO i CAN",LF,"FINISH THIS OTHER",LF
             .asc "PROJECT.'",LF,LF
             .asc "jEFFERSON HANDS YOU",LF,"HIS DESK WITH A BOW.",ED,ED
-aNeedTix:   .asc "fRECKLE-FACED BOY AT",LF,"THE COUNTER STOPS",LF
-            .asc "YOU. 'yOU NEED TO buy",LF,"A TICKET TO GET IN!'",ED
-            .asc "'yOU BETTER GET IN,",LF,"bABE'S ON DECK!'",ED
+aNeedTix:   .asc "tHE BOY AT THE TICKET",LF,"COUNTER STOPS YOU.",LF,LF
+            .asc "'yOU NEED TO buy A",LF,"TICKET TO GET IN!'",ED
+            .asc "'yOU BETTER GET TO",LF,"YOUR SEAT!'",ED
 aBuyTix:    .asc "'tHAT'S SOME FUNNY",LF,"LOOKIN' MONEY, BUT i",LF
             .asc "GUESS IT SPENDS THE",LF,"SAME. hERE'S YOUR",LF
             .asc "TICKET.'",ED,"'tHESE TICKETS COST",LF
@@ -737,14 +742,14 @@ aBallHit:   .asc COL_ALERT,"yOU HEAR THE CRACK",LF,"OF rUTH'S BAT AND",LF
             .asc "SEE THE BALL FLYING",LF,"TOWARD RIGHT FIELD.",ED
             .asc "tHE GAME GOES ON.",ED
 aMissed:    .asc "tHE MOMENT'S PASSED.",LF,"lET IT GO.",ED,ED
-aTryCatch:  .asc "wITH A SATISFYING",LF,"THUD, THE BALL PLANTS",LF
+aTryCatch:  .asc "wITH A SATISFYING",LF,"thud, THE BALL PLANTS",LF
             .asc "ITSELF IN THE",LF,"PILFERED GLOVE. fANS",LF
             .asc "EYE YOU SUSPICIOUSLY.",LF,LF,"yOU... BETTER GET OUT",LF
             .asc "OF HERE.",ED
-            .asc "wITH NOTHING TO CATCH",LF,"THE BALL, IT BOUNCES",LF
-            .asc "OUT OF YOUR HANDS AND",LF,"INTO THE HANDS OF",LF
-            .asc "ANOTHER FAN, WHO RUNS",LF,"LAUGHING FROM nAVIN",LF
-            .asc "fIELD.",ED
+            .asc "yOU TRY TO CATCH THE",LF,"BALL WITH YOUR BARE",LF
+            .asc "HANDS, BUT IT'S A",LF,"DISASTER.",LF,LF,
+            .asc "iT BOUNCES INTO THE",LF
+            .asc "GLOVE OF A FAN, WHO",LF,"RUNS OFF LAUGHING.",ED
 aToJail:    .asc "a LITTLE KID CRIES",LF,"AND POINTS AT YOU,",LF
             .asc "'sTOLE MY GLOVE!'",LF,LF,"cROWD DISAPPROVES,",LF
             .asc "AND SO DO dETROIT'S",LF,"fINEST...",ED,ED
@@ -760,7 +765,7 @@ aDrops:     .asc COL_ALERT,"a BALDING MAN IN A",LF,"SUIT RUSHES FROM A",LF
             .asc "CAFETERIA, LATE FOR",LF,"SOMETHING. aS HE",LF
             .asc "ENTERS THE sECURITY",LF,"rOOM, HE DOESN'T",LF
             .asc "NOTICE HIS IpHONE",LF,"FALLING FROM HIS",LF
-            .asc "POCKET.",ED
+            .asc "POCKET.",ED,ED
 aRiff:      .asc "yOU'RE NO pAGANINI,",LF,"BUT YOU CAN SHRED",LF
             .asc "LIKE IT'S 6199.",ED,"yOU HAVE NO GUITAR.",ED
 aTBoy:      .asc "'eNJOY THE GAME!'",ED,"'bAMBINO COULD REACH",LF
@@ -826,7 +831,7 @@ aCaught:    .asc "iN THE END, YOU DON'T",LF,"KNOW THE FOREST LIKE",LF
             .asc "THEY DO. tHE REBELS",LF,"SURROUND YOU, AND",LF
             .asc "THAT IS PRETTY MUCH",LF,"THAT.",ED,ED
 aCell:      .asc "sEEMS LIKE THERE'S NO",LF,"COVERAGE.",ED,"yOU DON'T HAVE A",LF
-            .asc "PHONE",ED
+            .asc "PHONE.",ED
 aRevCoin:   .asc "tHE BUREAU TOP ROLLS",LF,"OPEN. tHERE'S NOT",LF
             .asc "MUCH THERE.",ED,"tHERE'S NOT MUCH.",ED
 aBallFly:   .asc "a PARABOLIC 2-rbi",LF,"BALL IS HEADED RIGHT",LF
@@ -842,10 +847,10 @@ aTrip:      .asc "yOU FEEL YOUR FOOTING",LF,"GIVE OUT AS YOU",LF
             .asc "uNABLE TO FIND YOUR",LF,"REEL, YOU WRITHE ON",LF
             .asc "ON THE GROUND IN",LF,"PAIN, REALIZING THAT",LF
             .asc "THAT IT WILL BE",LF,"HOURS BEFORE THE",LF
-            .asc "bOSS COMES TO YOUR",LF,"RESCUE...",ED,ED
-aWear:      .asc "iT DOES NOT FIT.",ED,COL_ALERT,"YOU DON'T HAVE THAT.",ED    
+            .asc "bOSS COMES LOOKING",LF,"FOR YOU...",ED,ED
+aWear:      .asc "iT DOES NOT FIT.",ED,COL_ALERT,"yOU DON'T HAVE THAT.",ED    
 aYum:       .asc "yUM! tHIS IS WHAT YOU",LF,"LOVE ABOUT 1934.",ED  
-            .asc COL_ALERT,"YOU DON'T HAVE THAT.",ED
+            .asc COL_ALERT,"yOU DON'T HAVE THAT.",ED
 aLockdown:  .asc COL_ALERT,"bEHIND YOU, THE NORTH",LF,"DOOR SHUTS WITH A",LF
             .asc "TERRIFYING ker chunk.",LF,"tHE KEYPAD ROTATES",LF
             .asc "AWAY. aLARM SOUNDS.",LF,LF,"yOU START TO SUSPECT",LF
@@ -853,6 +858,9 @@ aLockdown:  .asc COL_ALERT,"bEHIND YOU, THE NORTH",LF,"DOOR SHUTS WITH A",LF
 aComing:    .asc COL_ALERT,"yOU HEAR SHOUTING",LF,"VOICES GETTING",LF
             .asc "CLOSER. tHEY TRACK",LF,"YOU WITHOUT EFFORT.",LF,LF
             .asc "find your reel!",ED,ED
+aAtFan:     .asc "fOR EXAMPLE, A COUPLE",LF,"OF THOROUGHLY",LF
+            .asc "INTOXICATED FANS GRAB",LF,"YOU BY BOTH ARMS AND",LF
+            .asc "THROW YOU OUT OF THE",LF,"BALLPARK.",ED,ED
             
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; TIMERS
@@ -869,11 +877,11 @@ aComing:    .asc COL_ALERT,"yOU HEAR SHOUTING",LF,"VOICES GETTING",LF
 ;              2 = Init always unless already running
 ;
 ; Memory is allocated to keep track of 112 Timers
-TimerInit:  .asc 1,  1 , 1, 1, 7, 1, 1, 1, 1,10, 1, 1, 1, 7,ED
-TimerRoom:  .asc 1,  3 ,12,10,10,14,23,48,48,48,11, 2,19,48
-TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-TimerAct:   .asc 38, 2, 18,18,14,11,33,52,53,54,58,59,60,66
-TimerSeen:  .asc 0,  0,  2, 2, 0, 2, 0, 1, 1, 1, 2, 0, 0, 1
+TimerInit:  .asc 1,  1 , 1, 1, 7, 1, 1, 1,10, 1, 1, 1, 7,ED
+TimerRoom:  .asc 1,  3 ,12,10,10,14,23,48,48,11, 2,19,48
+TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+TimerAct:   .asc 38, 2, 18,18,14,11,33,52,54,58,59,60,66
+TimerSeen:  .asc 0,  0,  2, 2, 0, 2, 0, 1, 1, 2, 0, 0, 1
 TimerDir:   .asc $01 ; Timer 0 direction ($01 = +1, $ff = -1)
 TimerTgt:   .asc 240 ; Timer 0 target (at which action happens)
 TimerOffst: .asc 13  ; Display time offset for Timer 0
