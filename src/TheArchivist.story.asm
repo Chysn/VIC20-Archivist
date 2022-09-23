@@ -38,10 +38,11 @@ SCORE_ACT   = 46                ; Action id when score is achieved
 ; GAME DATA
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;   
 SaveFile:   .asc "ARCHIVIST.SAV"
-EON:        .asc 0
+EON:        .asc 0              ; Here to determine length of filename
 
-Directions: .asc 'DUEWSN' ; Compass directions
-;           .asc 'DUSPAF' ; Maritime directions
+Directions:
+            .asc 'DUEWSN'       ; Compass directions
+;           .asc 'DUSPAF'        ; Maritime directions
 
 ; Inventory
 ; StartInv - A list of Item IDs the player has at the beginning of the game.
@@ -163,21 +164,21 @@ Rooms:      ; Main Facility (1-3)
             ; Tehredel, Lan Ges, 3449 (34-51)
             ;     D, U, E, W, S, N, RmProp, DescL, DescH (34-51)
             .byte 0, 35,39,38,41,36, 2, <rCamp,>rCamp
-            .byte 34,0, 0, 0, 0, 0,  0, <rLookout,>rLookout
+            .byte 34,0,  0, 0, 0, 0, 0, <rLookout,>rLookout
             .byte 0, 0, 37, 0,34,37, 2, <rForest,>rForest
             .byte 0, 0, 37,36,39, 0, 2, <rForest,>rForest
             .byte 0, 0, 40,38,40,36, 2, <rForest,>rForest
-            .byte 0, 0, 37,34, 0,37, 2, <rForest,>rForest
-            .byte 0, 0,  0, 0, 0,36, 2, <rForest,>rForest
-            .byte 0, 0,  0,39,44,34, 2, <rForest,>rForest
+            .byte 0, 0, 49,34, 0,37, 2, <rForest,>rForest
+            .byte 0, 0,  0, 0, 0,38, 2, <rForest,>rForest
+            .byte 0, 0,  0,40,44,34, 2, <rForest,>rForest
             .byte 0, 0, 48, 0,45, 0, 2, <rForest,>rForest
             .byte 0, 0, 40,44, 0, 0, 2, <rForest,>rForest
             .byte 0, 0, 45,43,47,41, 2, <rForest,>rForest
             .byte 0, 0, 46,44,46,42, 2, <rForest,>rForest
-            .byte 0, 0,  0,45, 0, 0, 2, <rForest,>rForest
-            .byte 0, 0,  0,40, 0,44, 2, <rForest,>rForest
-            .byte 0, 0, 50,42, 0,49 ,0, <rFront,>rFront
-            .byte 0, 0, 49,49,48,49, 2, <rForest,>rForest
+            .byte 0, 0, 48,45, 0, 0, 2, <rForest,>rForest
+            .byte 0, 0,  0,43, 0,44, 2, <rForest,>rForest
+            .byte 0, 0, 50,42, 0, 0 ,0, <rFront,>rFront
+            .byte 0, 0, 49,39,49,49, 2, <rForest,>rForest
             .byte 0, 0,  0,48, 0, 0, 0, <rMediTent,>rMediTent
             .byte 0, 0, 51,51,51,51, 2, <rForest,>rForest
             
@@ -248,7 +249,7 @@ rHomeSt:    .asc "hOME pLATE sTANDS",ED,"tHE GREEN OF THE",LF
             .asc "AS ARE THE SOUNDS OF",LF,"THE BAT AND THE SMELL",LF
             .asc "OF THE ALMONDS.",LF,LF,"lEFT fIELD IS TO THE",LF
             .asc "WEST, AND rIGHT fIELD",LF,"TO THE EAST.",LF,LF
-            .asc "a SMALL CONCESSION",LF,"STAND IS NORTH",ED
+            .asc "a SMALL CONCESSION",LF,"STAND IS NORTH.",ED
 rRightF:    .asc "rIGHT fIELD bLEACHERS",ED,"tHE CROWD ROARS.",ED
 rCenterF:   .asc "cENTER fIELD sTANDS",ED,"tHE CROWD OUT HERE IS",LF
             .asc "RAUCOUS, EVEN FOR",LF,"dETROIT. yOU'RE",LF
@@ -568,7 +569,7 @@ iWarnSign:  .asc ED,COL_ALERT,"   bubble to remain",LF,LF,"   unbroken  during"
 iPeanuts:   .asc "pEANUTS",ED,"eXTRA-SALTY!",ED
 iJacks:     .asc "cRACKER jacks",ED,"a FAVORITE BETWEEN",LF,
             .asc "1896 AND 2220, WHEN",LF,"CORN WENT EXTINCT.",LF,LF
-            .asc "IT'S BASICALLY",LF,"POPCORN AND PEANUTS",LF,
+            .asc "iT'S BASICALLY",LF,"POPCORN AND PEANUTS",LF,
             .asc "WITH CARAMEL AND,",LF,"FOR SOME REASON,",LF
             .asc "A TINY METAL HORSE.",ED
 iMan:       .asc ED,"hE'S NO LONGER IN",LF,"VIEW. hE HURRIED INTO",LF
@@ -622,7 +623,7 @@ ActVerb:    .byte 7,8,EV,9,9,3, 3,  7,10, 10,10,EV, 9,11,EV,12,12,12 ; 0-17
             .byte 14, 9,16,15,15,EV,17,7, 11,18,EV, 2, 9, 7, 7, 7    ; 28-43
             .byte 16,15,EV,18,18,18,16,16,EV,EV,EV,19,13,13,EV,EV,EV ; 44-60
             .byte 20,20,21,21,15,EV,18,ED                          
-ActItem:    .byte 3,4,0, 7,9,8, 8, 12,10,  4, 0,0 ,16,14, 0,13,13,13
+ActItem:    .byte 3,4,0, 7,9,8, 8, 12,10,  4, 0, 0,16,14, 0,13,13,13
             .byte 0, 21,22,24,24,24,24,24,24,24
             .byte 0, 32,31,34, 0, 0,35,42, 8, 0, 0,43,45,48,49,50
             .byte 30,31, 0,12,48,42,54, 0, 0, 0, 0, 0,56,56, 0, 0, 0
@@ -632,12 +633,12 @@ ActInRoom:  .byte 0,0,0, 0,0,0, 0,  6, 6,  6, 6,0,  0, 9, 0,11,11,11
             .byte 0,  0,24,25,25, 0, 0, 9, 6, 0, 0,33, 0,48,50,50
             .byte 50,50, 0, 0, 0, 0,50,50,48,48, 0, 0, 8, 8,11, 0, 0
             .byte  0, 0, 0, 0,25,48,11
-ActInvCon:  .byte 0,4,0, 0,0,0, 0,  0,10,  4, 0,0,  0,15, 0, 0,17, 0
+ActInvCon:  .byte 0,4,0, 0,0,0, 0,  0,10,  4, 0, 0, 0,15, 0, 0,17, 0
             .byte 13, 0, 0,0,0,0,0,0,0,0
             .byte 0,  0,31, 0, 0, 0,35,14, 0, 0, 0, 0, 0, 0, 0, 0
             .byte 30,30, 0, 0, 0, 0, 0,0 ,52,52, 0,10, 0, 0, 0, 0, 0
             .byte 29,52,60,61, 0,52, 0
-ActRoomCon: .byte 3,0,0, 1,1,11,12, 0,12, 12,12,0 , 1, 0, 0,20,19,19
+ActRoomCon: .byte 3,0,0, 1,1,11,12, 0,12, 12,12, 0, 1, 0, 0,20,19,19
             .byte 0,  1,22,0,0,0,0,0,0,0
             .byte 0,  1, 0, 0, 1, 0, 0, 0,12, 0, 0,44, 1, 0, 0, 0
             .byte 51,53, 0,12,48,42, 0, 1, 4, 0, 0, 0, 0, 0,19, 0, 0
@@ -647,7 +648,7 @@ ActInvExcl: .byte 0,1,0, 0,0,8, 8,  8, 8,  8, 8,14, 0, 0, 0,0,  0, 0
             .byte 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             .byte 0, 31, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,10
             .byte 0,  0, 0, 0, 0, 4, 0
-ActFrom:    .byte 1,0,0, 0,0,11,1,  1, 10, 4, 1,0 , 0,15,18,1, 17,19
+ActFrom:    .byte 1,0,0, 0,0,11,1,  1, 10, 4, 1, 0, 0,15,18,1, 17,19
             .byte 0,  0, 1,1,1, 1,  1,  1, 1, 1
             .byte 1,  0, 0, 0, 1, 1, 1, 1, 1, 1, 0,44, 0, 1, 1, 1
             .byte 51,31, 0, 1, 0, 0, 1, 1, 4,55, 0, 1,15,56, 1, 1, 0
@@ -874,10 +875,11 @@ aAtFan:     .asc "fOR EXAMPLE, A COUPLE",LF,"OF THOROUGHLY",LF
 ; TimerSeen  - How the Room Seen status affects timer initialization.
 ;              0 = Init on first entry
 ;              1 = Init on second and subsequent entries unless already running
-;              2 = Init always unless already running
+;              2 = Init on any entry unless already running
+;              3 = Init on any entry, retrigger if already running
 ;
 ; Memory is allocated to keep track of 112 Timers
-TimerInit:  .asc 1,  1 , 1, 1, 7, 1, 1, 1,10, 1, 1, 1, 7,ED
+TimerInit:  .asc 1,  1 , 1, 1, 7, 1, 1, 1,12, 1, 1, 1, 9,ED
 TimerRoom:  .asc 1,  3 ,12,10,10,14,23,48,48,11, 2,19,48
 TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 TimerAct:   .asc 38, 2, 18,18,14,11,33,52,54,58,59,60,66

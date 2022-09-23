@@ -247,7 +247,7 @@ failure:    sec                 ; FAILURE!
             tay                 ;   ,,
             lda ActResTxtL,x    ;   ,,
             jmp PrintAlt        ;   ,,
-eval_r1:    rts
+eval_r1:    rts                 ; (nearby RTS to be in-bounds)
 success:    sec                 ; SUCCESS!
             ror ACT_SUCCESS     ; Set the action success flag
             ldy CURR_ROOM       ; If a successful action happens in a room,
@@ -287,6 +287,8 @@ is_from:    sta FROM_ID         ; Store the From ID temporarily
 next_timer: iny                 ; Get next
             bne loop            ; ,,            
 timer_done: rts                 ; Finish processing this action
+
+            ; Transform the FROM item into the TO item
 xform:      sta TO_ID
             cmp FROM_ID         ;   If from and to are the same, no transform
             beq eval_r          ;   ,,
@@ -315,7 +317,7 @@ xform:      sta TO_ID
             ldy FROM_ID         ; (This is backwards from the usual way, but
             sta ITEM_ROOMS-1,y  ;   makes placeholders work.)
             rts
-                                             
+                          
             ; Move TO item to where FROM item is and set FROM item to Nowhere
             ; if the FROM item was not found in inventory
 ch_rooms:   ldy FROM_ID         ;   Get the From item's current location
@@ -667,13 +669,15 @@ ch_room_t:  ldx #$ff            ; Check Room Timers. X is the Room Timer ID
             bne loop            ;   If not, get next Room Timer            
             tay                 ; Y=CURR_ROOM. Should timer be initialized?
             lda TimerSeen,x     ;   ,,
-            cmp #2              ;   If TimerSeen is 2, then always init
-            beq init_timer      ;   ,,
+            cmp #2              ;   If TimerSeen is 2, then init on any entry
+            beq init_timer      ;     if timer is not started
+            cmp #3              ;   If TimerSeen is 3, then init on any entry
+            beq retrig          ;     even if timer is started
             cmp SEEN_ROOMS-1,y  ;   If TimerSeen=0, the first time
             bne loop            ;   If TimerSeen=1, second and subsequent times
 init_timer: lda TIMERS,x        ; If the timer is already started, don't
             bne loop            ;   start it again
-            lda TimerInit,x     ; Initialize the timer countdown
+retrig:     lda TimerInit,x     ; Initialize the timer countdown
             sta TIMERS,x        ; ,,
             bne loop            ; Go back for additional timers
 moveto_r:   jsr AdvTimers
@@ -916,6 +920,9 @@ help:       lda #<HelpTx
             ldy #>HelpTx
             jmp PrintRet
 
+; Save
+; To cassette, using the filename specified as SaveFile in the
+; Story File
 Save:       ldx #1              ; DEVICE=1 CASSETTE
             ldy #0              ; No command
             jsr SETLFS
@@ -954,7 +961,9 @@ post_load:  jsr SetRoomAd       ; Set the (RM) pointer
             sta ITEM_ID         ;   DoLook is treated as a look at the room
             sta PATTERN         ;   ,,
             jmp DoLook          ; Look at the room
-            
+
+; Set Name
+; Shared between Save and Load            
 SetName:    lda #EON-SaveFile   ; File name length
             ldx #<SaveFile      ; Set filename
             ldy #>SaveFile      ; ,,
