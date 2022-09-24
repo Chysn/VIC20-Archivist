@@ -175,7 +175,7 @@ Rooms:      ; Main Facility (1-3)
             .byte 0, 0, 40,44, 0, 0, 2, <rForest,>rForest
             .byte 0, 0, 45,43,47,41, 2, <rForest,>rForest
             .byte 0, 0, 46,44,46,42, 2, <rForest,>rForest
-            .byte 0, 0, 48,45, 0, 0, 2, <rForest,>rForest
+            .byte 0, 0, 46,45, 0, 0, 2, <rForest,>rForest
             .byte 0, 0,  0,43, 0,44, 2, <rForest,>rForest
             .byte 0, 0, 50,42, 0, 0 ,0, <rFront,>rFront
             .byte 0, 0, 49,39,49,49, 2, <rForest,>rForest
