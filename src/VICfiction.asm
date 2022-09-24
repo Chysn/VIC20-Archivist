@@ -25,14 +25,16 @@
 VERB_ID     = $00               ; Verb ID
 ITEM_ID     = $01               ; Item ID
 PATTERN     = $02               ; Pattern (2 bytes) 
-ACT_SUCCESS = $a7               ; At least one action was successful
-ACT_FAILURE = $a8               ; At least one action failed
-TEMP        = $a9               ; Temporary values (3 bytes)
-FROM_ID     = $ac               ; From ID during transform
-TO_ID       = $ad               ; To ID during transform
-SCORE       = $ae               ; Score (number of scored items in SCORE_RM)
+ACT_SUCCESS = $a6               ; At least one action was successful
+ACT_FAILURE = $a7               ; At least one action failed
+TEMP        = $a9               ; Temporary values (4 bytes)
+FROM_ID     = $ad               ; From ID during transform
+TO_ID       = $ae               ; To ID during transform
+SCORE       = $af               ; Score (number of scored items in SCORE_RM)
 RM          = $fb               ; Room address (2 bytes)
 BUFFER      = $0220             ; Input buffer
+
+; Saved Memory Locations
 SEEN_ROOMS  = $1c00             ; Marked as 1 when entered (128 bytes)
 INVENTORY   = $1c80             ; Item IDs in Inventory (16 bytes)
 TIMERS      = $1c90             ; Room timer countdown values (112 bytes)
@@ -83,6 +85,7 @@ IS_SCORED   = $40               ;               - Is scored
 IS_LIGHT    = $80               ;               - Light source
 IS_DARK     = $01               ; Room Property - Darkened
 HIDE_DIR    = $02               ;               - Hide Directions
+CLR_TIMERS  = $04               ;               - Stop timers (except 0)
 EV          = $ff               ; Special action id for triggered action
 
 ; RAM Start
@@ -663,28 +666,46 @@ MoveTo:     sta CURR_ROOM
 ch_room_t:  ldx #$ff            ; Check Room Timers. X is the Room Timer ID
 -loop:      inx                 ; Advance to next ID 
             lda TimerInit,x     ; Reached the end of Room Timers?
-            beq moveto_r        ;   If so, exit
+            beq ch_clear        ;   If so, exit
             lda CURR_ROOM       ; Get the current room
             cmp TimerRoom,x     ;   Is the timer in this room?
             bne loop            ;   If not, get next Room Timer            
             tay                 ; Y=CURR_ROOM. Should timer be initialized?
-            lda TimerSeen,x     ;   ,,
-            cmp #2              ;   If TimerSeen is 2, then init on any entry
+            lda TimerTrig,x     ;   ,,
+            cmp #2              ;   If TimerTrig is 2, then init on any entry
             beq init_timer      ;     if timer is not started
-            cmp #3              ;   If TimerSeen is 3, then init on any entry
+            cmp #3              ;   If TimerTrig is 3, then init on any entry
             beq retrig          ;     even if timer is started
-            cmp SEEN_ROOMS-1,y  ;   If TimerSeen=0, the first time
-            bne loop            ;   If TimerSeen=1, second and subsequent times
+            cmp SEEN_ROOMS-1,y  ;   If TimerTrig=0, the first time
+            bne loop            ;   If TimerTrig=1, second and subsequent times
 init_timer: lda TIMERS,x        ; If the timer is already started, don't
             bne loop            ;   start it again
-retrig:     lda TimerInit,x     ; Initialize the timer countdown
+retrig:     lda TimerTest,x     ; Is there a test associated with this timer?
+            beq timer_st        ; ,, If not, skip test evaluation
+            stx TEMP+3          ; ,, Save X for this loop
+            tax                 ; If so, put that Action ID into X
+            jsr DoEvent         ;   and do the event
+            ldx TEMP+3          ; Restore X for this loop
+            bit ACT_SUCCESS     ; If the action was not successful, then
+            bpl ch_clear        ;   skip timer start
+timer_st:   lda TimerInit,x     ; START TIMER COUNTDOWN!
             sta TIMERS,x        ; ,,
             bne loop            ; Go back for additional timers
-moveto_r:   jsr AdvTimers
-            pla
-            tax
+ch_clear:   jsr AdvTimers       ; Do normal timer advance prior to clear check           
+            lda #CLR_TIMERS     ; If the room being entered has the CLEAR TIMERS
+            jsr TestRmProp      ;   property, then reset all timers to 0
+            beq moveto_r        ;   except for the clock (timer 0).
+            ldx #1              ;   ,,
+-loop:      lda TimerInit,x     ;   ,, (No TimerInit value means end-of-timers
+            beq moveto_r        ;   ,, ,,)
+            lda #0              ;   ,,
+            sta TIMERS,x        ;   ,,
+            inx                 ;   ,,
+            bne loop            ;   ,,
+moveto_r:   pla                 ; Restore X for caller
+            tax                 ;   ,,
             rts
-
+            
 ; Set Room Address
 SetRoomAd:  lda #<Rooms         ; Set starting room address
             sta RM              ; ,,
@@ -784,10 +805,9 @@ next_item:  inx                 ; ,,
             jmp next_item       ; Go to the next item
             
             ; Directional display
-DirDisp:    ldy #6              ; Room properties
-            lda (RM),y          ; If directions are hidden, skip
-            and #HIDE_DIR       ; ,,
-            bne ShowScore       ; ,,
+DirDisp:    lda #HIDE_DIR       ; Does this room hide directions?
+            jsr TestRmProp      ; ,,
+            bne ShowScore       ; ,, If so, skip right to score display
             lda #COL_DIR        ; Set directional display color
             jsr CHROUT          ; ,,
             lda #'('            ; Open paren
@@ -846,10 +866,9 @@ score_r:    rts
 ; Is Light
 ; Is there light in the current room?
 ; Carry set if yes
-IsLight:    ldy #6              ; Get room property
-            lda (RM),y          ; ,,
-            and #IS_DARK        ; Is this a dark room?
-            beq room_light      ;   If not return with cary set
+IsLight:    lda #IS_DARK        ; Test this room's IS DARK property
+            jsr TestRmProp      ;   ,,
+            beq room_light      ;   If not return with carry set
             ldy #MAX_INV-1      ; Y = location index
 -loop:      lda INVENTORY,y     ; Does this location contain a light source?
             tax                 ; ,,
@@ -862,6 +881,14 @@ IsLight:    ldy #6              ; Get room property
             rts                 ;   carry for darkness
 room_light: sec                 ; The room is well-illuminated, so set
             rts                 ;   carry for light
+            
+; Test Room Property
+; Specify property mask in A
+;   BNE property_set
+;   BEQ property_unset
+TestRmProp: ldy #6              ; Get room property
+            and (RM),y
+            rts
             
 ; Print Alternate Message
 ; Given the Message address (A, Y), look for the ED+1, then print from there

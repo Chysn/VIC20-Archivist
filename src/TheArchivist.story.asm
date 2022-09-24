@@ -112,10 +112,11 @@ VerbID:     .byte  1,  1,  2,  2,  2,  3,  3,  4,  5,  5,  6,  6    ; Basic Verb
 ;      Bit 0 - The room is dark. The player can't see unless carrying an item
 ;              with the IS_LIGHT property
 ;      Bit 1 - Direction Display is suppressed
+;      Bit 2 - Timers (except 0) are cleared when this room is entered
 ; Room IDs are 1-indexed
 Rooms:      ; Main Facility (1-3)
             ;     D, U, E, W, S, N, RmProp, DescL, DescH
-            .byte 2, 0, 0, 0, 0, 0, 0, <rIntake,>rIntake
+            .byte 2, 0, 0, 0, 0, 0, 4, <rIntake,>rIntake        ; CLR_TIMERS
             .byte 0, 1, 3, 0, 0, 0, 0, <rOffice,>rOffice
             .byte 0, 0, 0, 2, 0, 0, 0, <rPlaza,>rPlaza
             
@@ -641,7 +642,7 @@ ActInvCon:  .byte 0,4,0, 0,0,0, 0,  0,10,  4, 0, 0, 0,15, 0, 0,17, 0
 ActRoomCon: .byte 3,0,0, 1,1,11,12, 0,12, 12,12, 0, 1, 0, 0,20,19,19
             .byte 0,  1,22,0,0,0,0,0,0,0
             .byte 0,  1, 0, 0, 1, 0, 0, 0,12, 0, 0,44, 1, 0, 0, 0
-            .byte 51,53, 0,12,48,42, 0, 1, 4, 0, 0, 0, 0, 0,19, 0, 0
+            .byte 51,53, 0,12,48,42, 0, 1, 4, 4, 0, 0, 0, 0,19, 0, 0
             .byte 0,  0, 0, 0, 0, 0, 0
 ActInvExcl: .byte 0,1,0, 0,0,8, 8,  8, 8,  8, 8,14, 0, 0, 0,0,  0, 0
             .byte 0,  0, 0,0,0, 0,  0,  0, 0, 0
@@ -651,12 +652,12 @@ ActInvExcl: .byte 0,1,0, 0,0,8, 8,  8, 8,  8, 8,14, 0, 0, 0,0,  0, 0
 ActFrom:    .byte 1,0,0, 0,0,11,1,  1, 10, 4, 1, 0, 0,15,18,1, 17,19
             .byte 0,  0, 1,1,1, 1,  1,  1, 1, 1
             .byte 1,  0, 0, 0, 1, 1, 1, 1, 1, 1, 0,44, 0, 1, 1, 1
-            .byte 51,31, 0, 1, 0, 0, 1, 1, 4,55, 0, 1,15,56, 1, 1, 0
+            .byte 51,31, 0, 1, 0, 0, 1, 1, 4, 1, 0, 1,15,56, 1, 1, 0
             .byte 1,  1, 1, 1, 0, 1, 0
 ActTo:      .byte 1,1,0, 4,0,12,1,  1,  8, 8, 1,9 , 9,14,19,1, 13,20
             .byte 15,16, 1,1,1,1,1,1,1,1
             .byte 1 ,23,25,26, 1, 1, 1, 1, 1, 1, 0,30,34, 1, 1, 1
-            .byte 53, 0, 0, 1, 51,15,1,1, 55, 4, 0, 1, 0,57, 1, 1, 0
+            .byte 53, 0, 0, 1, 51,15,1,1, 55, 1, 0, 1, 0,57, 1, 1, 0
             .byte 1,  1, 1, 1,53, 1, 9
 ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aJeffOffer,<aJeffAcc,<aJeffAcc,<aJeffDecl
@@ -666,7 +667,7 @@ ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aSec,<aDrops,<aRiff,<aTBoy,<aBuyDesk,<aViolence,<aEOB
             .byte <aFoundGum,<aX,<aTRebels,<aTMedic,<aTVande,<aPrScan
             .byte <aPrEnter,<aWin,<aAtJeff,<aAtRebels,<aAtBoy,<aScDNA
-            .byte <aPrFail,<aStealHelm,0,<aCaught,<aCell,<aRevCoin,0
+            .byte <aPrFail,<aStealHelm,<DIAG,<aCaught,<aCell,<aRevCoin,0
             .byte <aBallFly,<aAdEntry,<aTrip,<aWear,<aWear,<aYum,<aYum
             .byte <aLockdown,<aComing,<aAtFan
 ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
@@ -677,11 +678,12 @@ ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aSec,>aDrops,>aRiff,>aTBoy,>aBuyDesk,>aViolence,>aEOB
             .byte >aFoundGum,>aX,>aTRebels,>aTMedic,>aTVande,>aPrScan
             .byte >aPrEnter,>aWin,>aAtJeff,>aAtRebels,>aAtBoy,>aScDNA
-            .byte >aPrFail,>aStealHelm,0,>aCaught,>aCell,>aRevCoin,0
+            .byte >aPrFail,>aStealHelm,>DIAG,>aCaught,>aCell,>aRevCoin,0
             .byte >aBallFly,>aAdEntry,>aTrip,>aWear,>aWear,>aYum,>aYum
             .byte >aLockdown,>aComing,>aAtFan
             
 ; Action Results
+DIAG:       .asc "aCTION success",ED,"aCTION failure",ED
 aBoss:      .asc "'hAVE A GREAT DAY.",LF,LF,"'cAPEK COLLECTS YOUR",LF
             .asc "iNTAKE AT 17:00. yOU",LF,"JUST NEED TO drop",LF,
             .asc "ASSETS UPSTAIRS.",LF,LF,"'aND DON'T FORGET",LF
@@ -871,19 +873,24 @@ aAtFan:     .asc "fOR EXAMPLE, A COUPLE",LF,"OF THOROUGHLY",LF
 ; TimerInit  - The number of turns to which the timer is set when started. If
 ;              the value is 1, then the action is triggered immediately upon 
 ;              entering the room.
-; TimerAct   - The Action ID that's executed when the timer reaches 0
-; TimerSeen  - How the Room Seen status affects timer initialization.
-;              0 = Init on first entry
-;              1 = Init on second and subsequent entries unless already running
-;              2 = Init on any entry unless already running
-;              3 = Init on any entry, retrigger if already running
+; TimerTrig  - How the timer is triggered when TimerRoom is entered
+;              0 = Trigger on first entry
+;              1 = Trigger on second and subsequent entries unless running
+;              2 = Trigger on any entry unless already running
+;              3 = Trigger on any entry, retrigger if already running
+; TimerTest  - The Action ID that's executed when the TimerTrig condition is
+;              met. If the result is SUCCESS, then the timer is started.
+;              Otherwise, it is not started. If TimerTest is 0, the timer is
+;              always started if the TimerTrig condition is met.
+; TimerAct   - The Action ID that's executed when the timer reaches 0.
 ;
 ; Memory is allocated to keep track of 112 Timers
 TimerInit:  .asc 1,  1 , 1, 1, 7, 1, 1, 1,12, 1, 1, 1, 9,ED
 TimerRoom:  .asc 1,  3 ,12,10,10,14,23,48,48,11, 2,19,48
 TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+TimerTrig:  .asc 0,  0,  2, 2, 0, 2, 0, 2, 2, 2, 0, 0, 2
+TimerTest:  .asc 0,  0,  0, 0, 0, 0, 0,53,53, 0, 0, 0,53
 TimerAct:   .asc 38, 2, 18,18,14,11,33,52,54,58,59,60,66
-TimerSeen:  .asc 0,  0,  2, 2, 0, 2, 0, 1, 1, 2, 0, 0, 1
 TimerDir:   .asc $01 ; Timer 0 direction ($01 = +1, $ff = -1)
 TimerTgt:   .asc 240 ; Timer 0 target (at which action happens)
 TimerOffst: .asc 13  ; Display time offset for Timer 0
