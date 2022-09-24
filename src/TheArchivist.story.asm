@@ -269,7 +269,7 @@ rJail:      .asc "dETROIT jAIL",ED,"tHE CELL IS LIKE",LF
             .asc "oNE HOPES YOU HAVE",LF,"YOUR REEL.",ED
 rAnteCh:    .asc "aNTECHAMBER",ED,"tOMB OF nEFERTARI,",LF
             .asc "vALLEY OF THE qUEENS,",LF,"lUXOR.",LF,LF
-            .asc "yOUR IpHONE HAS",LF,"ENOUGH ILLUMINATION",LF
+            .asc "yOUR IpHONE PROVIDES",LF,"ENOUGH ILLUMINATION",LF
             .asc "FOR YOU TO FIND YOUR",LF,"WAY, AND FOR YOU TO",LF
             .asc "APPRECIATE THE RICH",LF,"COLORED ILLUSTRATIONS",LF
             .asc "THAT COVER THE WALLS.",ED
