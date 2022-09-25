@@ -623,42 +623,42 @@ ActVerb:    .byte 7,8,EV,9,9,3, 3,  7,10, 10,10,EV, 9,11,EV,12,12,12 ; 0-17
             .byte EV, 9,13,2,2,2,2,2,2,2,                            ; 18-27
             .byte 14, 9,16,15,15,EV,17,7, 11,18,EV, 2, 9, 7, 7, 7    ; 28-43
             .byte 16,15,EV,18,18,18,16,16,EV,EV,EV,19,13,13,EV,EV,EV ; 44-60
-            .byte 20,20,21,21,15,EV,18,ED                          
+            .byte 20,20,21,21,15,EV,18,EV,ED                          
 ActItem:    .byte 3,4,0, 7,9,8, 8, 12,10,  4, 0, 0,16,14, 0,13,13,13
             .byte 0, 21,22,24,24,24,24,24,24,24
             .byte 0, 32,31,34, 0, 0,35,42, 8, 0, 0,43,45,48,49,50
             .byte 30,31, 0,12,48,42,54, 0, 0, 0, 0, 0,56,56, 0, 0, 0
-            .byte 29,52,60,61, 0, 0,63
-ActInRoom:  .byte 0,0,0, 0,0,0, 0,  6, 6,  6, 6,0,  0, 9, 0,11,11,11
+            .byte 29,52,60,61, 0, 0,63, 0
+ActInRoom:  .byte 0,0,0, 0,0,0, 0,  6, 6,  6, 6, 0, 0, 9, 0,11,11,11
             .byte 0,  0, 0,16,17,18,19,20,21,22
             .byte 0,  0,24,25,25, 0, 0, 9, 6, 0, 0,33, 0,48,50,50
             .byte 50,50, 0, 0, 0, 0,50,50,48,48, 0, 0, 8, 8,11, 0, 0
-            .byte  0, 0, 0, 0,25,48,11
+            .byte  0, 0, 0, 0,25,48,11,48
 ActInvCon:  .byte 0,4,0, 0,0,0, 0,  0,10,  4, 0, 0, 0,15, 0, 0,17, 0
             .byte 13, 0, 0,0,0,0,0,0,0,0
             .byte 0,  0,31, 0, 0, 0,35,14, 0, 0, 0, 0, 0, 0, 0, 0
             .byte 30,30, 0, 0, 0, 0, 0,0 ,52,52, 0,10, 0, 0, 0, 0, 0
-            .byte 29,52,60,61, 0,52, 0
+            .byte 29,52,60,61, 0,52, 0,52
 ActRoomCon: .byte 3,0,0, 1,1,11,12, 0,12, 12,12, 0, 1, 0, 0,20,19,19
             .byte 0,  1,22,0,0,0,0,0,0,0
             .byte 0,  1, 0, 0, 1, 0, 0, 0,12, 0, 0,44, 1, 0, 0, 0
-            .byte 51,53, 0,12,48,42, 0, 1, 4, 4, 0, 0, 0, 0,19, 0, 0
-            .byte 0,  0, 0, 0, 0, 0, 0
-ActInvExcl: .byte 0,1,0, 0,0,8, 8,  8, 8,  8, 8,14, 0, 0, 0,0,  0, 0
+            .byte 51,53, 0,12,48,42, 0, 1, 4, 0, 0, 0, 0, 0,19, 0, 0
+            .byte 0,  0, 0, 0, 0, 0, 0, 0
+ActInvExcl: .byte 0,1,0, 0,0,8, 8,  8,  8, 8, 8,14, 0, 0, 0, 0, 0, 0
             .byte 0,  0, 0,0,0, 0,  0,  0, 0, 0
             .byte 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-            .byte 0, 31, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,10
-            .byte 0,  0, 0, 0, 0, 4, 0
+            .byte 0, 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,10
+            .byte 0,  0, 0, 0, 0, 0, 0, 4
 ActFrom:    .byte 1,0,0, 0,0,11,1,  1, 10, 4, 1, 0, 0,15,18,1, 17,19
             .byte 0,  0, 1,1,1, 1,  1,  1, 1, 1
             .byte 1,  0, 0, 0, 1, 1, 1, 1, 1, 1, 0,44, 0, 1, 1, 1
             .byte 51,31, 0, 1, 0, 0, 1, 1, 4, 1, 0, 1,15,56, 1, 1, 0
-            .byte 1,  1, 1, 1, 0, 1, 0
+            .byte 1,  1, 1, 1, 0, 1, 0, 1
 ActTo:      .byte 1,1,0, 4,0,12,1,  1,  8, 8, 1,9 , 9,14,19,1, 13,20
             .byte 15,16, 1,1,1,1,1,1,1,1
             .byte 1 ,23,25,26, 1, 1, 1, 1, 1, 1, 0,30,34, 1, 1, 1
             .byte 53, 0, 0, 1, 51,15,1,1, 55, 1, 0, 1, 0,57, 1, 1, 0
-            .byte 1,  1, 1, 1,53, 1, 9
+            .byte 1,  1, 1, 1,53, 1, 9, 1
 ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aJeffOffer,<aJeffAcc,<aJeffAcc,<aJeffDecl
             .byte <aNeedTix,<aX,<aBuyTix,<aBallHit,<aMissed,<aTryCatch,0
@@ -667,9 +667,9 @@ ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aSec,<aDrops,<aRiff,<aTBoy,<aBuyDesk,<aViolence,<aEOB
             .byte <aFoundGum,<aX,<aTRebels,<aTMedic,<aTVande,<aPrScan
             .byte <aPrEnter,<aWin,<aAtJeff,<aAtRebels,<aAtBoy,<aScDNA
-            .byte <aPrFail,<aStealHelm,<DIAG,<aCaught,<aCell,<aRevCoin,0
+            .byte <aPrFail,<aStealHelm,0,<aCaught,<aCell,<aRevCoin,0
             .byte <aBallFly,<aAdEntry,<aTrip,<aWear,<aWear,<aYum,<aYum
-            .byte <aLockdown,<aComing,<aAtFan
+            .byte <aLockdown,<aComing,<aAtFan,<aStealH2
 ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aJeffOffer,>aJeffAcc,>aJeffAcc,>aJeffDecl
             .byte >aNeedTix,>aX,>aBuyTix,>aBallHit,>aMissed,>aTryCatch,0
@@ -678,9 +678,9 @@ ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aSec,>aDrops,>aRiff,>aTBoy,>aBuyDesk,>aViolence,>aEOB
             .byte >aFoundGum,>aX,>aTRebels,>aTMedic,>aTVande,>aPrScan
             .byte >aPrEnter,>aWin,>aAtJeff,>aAtRebels,>aAtBoy,>aScDNA
-            .byte >aPrFail,>aStealHelm,>DIAG,>aCaught,>aCell,>aRevCoin,0
+            .byte >aPrFail,>aStealHelm,0,>aCaught,>aCell,>aRevCoin,0
             .byte >aBallFly,>aAdEntry,>aTrip,>aWear,>aWear,>aYum,>aYum
-            .byte >aLockdown,>aComing,>aAtFan
+            .byte >aLockdown,>aComing,>aAtFan,>aStealH2
             
 ; Action Results
 DIAG:       .asc "aCTION success",ED,"aCTION failure",ED
@@ -824,12 +824,12 @@ aAtRebels:  .asc "fOR EXAMPLE, THESE",LF,"REBELS, WHO'VE",LF
             .asc "SOMEWHERE.",ED,ED
 aScDNA:     .asc "yOU'LL NEED TO BE WAY",LF,"MORE SPECIFIC.",ED,ED
 aPrFail:    .asc ED,"nOTHING HAPPENS.",ED
-aStealHelm: .asc "oNE OF THE REBELS",LF,"SPOTS YOU WITH THE",LF
-            .asc "hELM AND SOON THEY'RE",LF,"ALL UPON YOU.",LF,LF
-            .asc "tHEY TRY TO GET THE",LF,"hELM BACK, BUT GRAB",LF
-            .asc "YOUR REEL INSTEAD,",LF,"AND THROW IT INTO THE",LF
-            .asc "FOREST. iT SEEMS LIKE",LF,"THEY MOSTLY PLAN TO",LF
-            .asc "KILL YOU.",LF,LF,"run!!",ED,ED
+aStealHelm: .asc "a REBEL GRABS YOUR",LF,"REEL AND THROWS IT",LF
+            .asc "IN INTO THE WOODS.",ED,ED
+aStealH2:   .asc "tHE REBELS SPOT YOU",LF,"WITH THE hELM AND",LF
+            .asc "SOON THEY'RE UPON",LF,"YOU.",LF,LF
+            .asc "iT SEEMS LIKE THEY",LF,"MOSTLY PLAN TO KILL",LF,"YOU.",LF,LF
+            .asc "run!!",ED,ED         
 aCaught:    .asc "iN THE END, YOU DON'T",LF,"KNOW THE FOREST LIKE",LF
             .asc "THEY DO. tHE REBELS",LF,"SURROUND YOU, AND",LF
             .asc "THAT IS PRETTY MUCH",LF,"THAT.",ED,ED
@@ -885,12 +885,12 @@ aAtFan:     .asc "fOR EXAMPLE, A COUPLE",LF,"OF THOROUGHLY",LF
 ; TimerAct   - The Action ID that's executed when the timer reaches 0.
 ;
 ; Memory is allocated to keep track of 112 Timers
-TimerInit:  .asc 1,  1 , 1, 1, 7, 1, 1, 1,12, 1, 1, 1, 9,ED
-TimerRoom:  .asc 1,  3 ,12,10,10,14,23,48,48,11, 2,19,48
-TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-TimerTrig:  .asc 0,  0,  2, 2, 0, 2, 0, 2, 2, 2, 0, 0, 2
-TimerTest:  .asc 0,  0,  0, 0, 0, 0, 0,53,53, 0, 0, 0,53
-TimerAct:   .asc 38, 2, 18,18,14,11,33,52,54,58,59,60,66
+TimerInit:  .asc 1,  1 , 1, 1, 7, 1, 1, 1, 8, 1, 1, 1, 5, 1,ED
+TimerRoom:  .asc 1,  3 ,12,10,10,14,23,48,48,11, 2,19,48,48
+TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+TimerTrig:  .asc 0,  0,  2, 2, 0, 2, 0, 2, 2, 2, 0, 0, 2, 2
+TimerTest:  .asc 0,  0,  0, 0, 0, 0, 0,53,53, 0, 0, 0,53,53
+TimerAct:   .asc 38, 2, 18,18,14,11,33,52,54,58,59,60,66,68
 TimerDir:   .asc $01 ; Timer 0 direction ($01 = +1, $ff = -1)
 TimerTgt:   .asc 240 ; Timer 0 target (at which action happens)
 TimerOffst: .asc 13  ; Display time offset for Timer 0
