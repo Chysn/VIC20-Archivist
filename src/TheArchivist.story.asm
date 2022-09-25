@@ -49,7 +49,7 @@ Directions:
 ;            Make sure to pad this to 16 items.
 ; MAX_INV  - A constant specifying the NUMBER of items the player can have,
 ;            NOT the last inventory index.
-StartInv:   .asc 6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+StartInv:   .asc 6,0
 MAX_INV     = 3
 
 ; Text - Game Messages, Errors, etc.
@@ -387,7 +387,7 @@ ItemRoom:   .byte  1 , 1,  2 , 2 , 1 , 0,  1 , 6 , 1 ,23 , 6 , 0 , 0
             .byte 28 ,32,  9 ,33, 33 , 0, 35 , 35,48 ,50 ,50 , 50,50
             .byte  0,  0, 47 , 8,  0 , 7,  2 , 52,52 ,23 ,11
 ItemProp:   .byte  3 , 3,  3 , 0,  3 , 8,  3 ,$40, 3 ,$88, 7 , 2 ,$40
-            .byte  0 , 0,  3 , 1 , 7 , 7,  7 , 3,  2 , 0 ,35 , 0 , 0
+            .byte  0 , 0,  3 , 1 , 7 , 7,  7 , 3,  3 , 0 ,35 , 0 , 0
             .byte  0 , 2,$40 , 0 , 0 , 3,  3 , 3,$40 , 3 , 3 , 3 , 0
             .byte  0 , 0,  3 , 3 , 7 , 3,  0 , 0,  3 , 3 , 3 , 3, $40
             .byte  3 , 3,  7 , 3 , 3 ,11,  3 , 0,  0 , 3 , 3
@@ -421,7 +421,8 @@ iCursor:    .asc ED,"tHE CURSOR EVOKES A",LF
 iConsole:   .asc ED,"yOU'D IMAGINE THEY'D",LF
             .asc "HAVE FANCIER CONSOLES",LF,"IN THE 63RD CENTURY,",LF
             .asc "BUT THIS CONSOLE IS",LF,"JUST A STAND WITH A",LF
-            .asc "ROTARY CONTROL TO",LF,"dial DESTINATIONS.",LF,LF
+            .asc "ROTARY CONTROL TO",LF,"dial DESTINATIONS",LF
+            .asc "FOR THE CURSOR.",LF,LF
             .asc "pROBABLY THE ux dEV",LF,"WANTED TO MAKE YOU",LF
             .asc "COMFORTABLE, AND",LF,"MISSED THE MARK BY",LF
             .asc "FIFTY YEARS.",ED
@@ -603,13 +604,15 @@ iFan:       .asc ED,"tHIS PLACE IS FILLED",LF,"WITH 'EM! aNY",LF
 ;                happen in any room that the item is in, as well as the player's
 ;                inventory. 
 ;
-;                ActTo can also specify a Room ID, if ActFrom is 0.
+;                ActTo can also specify a Room ID, if bit 7 is set. In this case
+;                the ActFrom item will be moved directly to the specified room.
+;                If ActFrom is 0, the PLAYER is moved to the specified room.
 ;
 ;                If ActTo is 0, the ActFrom item will be moved to the room that
 ;                the player is currently in.
 ;
-;                If both ActFrom and ActTo are 0, then the text is displayed and 
-;                the game ends.
+;                If both ActFrom and ActTo are 0, then the success text is 
+;                displayed and the game ends.
 ;
 ;                If both ActFrom and ActTo are the same non-zero Item ID, only
 ;                messages will be displayed.
@@ -657,7 +660,7 @@ ActFrom:    .byte 1,0,0, 0,0,11,1,  1, 10, 4, 1, 0, 0,15,18,1, 17,19
 ActTo:      .byte 1,1,0, 4,0,12,1,  1,  8, 8, 1,9 , 9,14,19,1, 13,20
             .byte 15,16, 1,1,1,1,1,1,1,1
             .byte 1 ,23,25,26, 1, 1, 1, 1, 1, 1, 0,30,34, 1, 1, 1
-            .byte 53, 0, 0, 1, 51,15,1,1, 55, 1, 0, 1, 0,57, 1, 1, 0
+            .byte 53, 0, 0, 1, 51,15,1,1,$af, 1, 0, 1, 0,57, 1, 1, 0
             .byte 1,  1, 1, 1,53, 1, 9, 1
 ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aJeffOffer,<aJeffAcc,<aJeffAcc,<aJeffDecl
@@ -824,10 +827,10 @@ aAtRebels:  .asc "fOR EXAMPLE, THESE",LF,"REBELS, WHO'VE",LF
             .asc "SOMEWHERE.",ED,ED
 aScDNA:     .asc "yOU'LL NEED TO BE WAY",LF,"MORE SPECIFIC.",ED,ED
 aPrFail:    .asc ED,"nOTHING HAPPENS.",ED
-aStealHelm: .asc "a REBEL GRABS YOUR",LF,"REEL AND THROWS IT",LF
-            .asc "IN INTO THE WOODS.",ED,ED
-aStealH2:   .asc "tHE REBELS SPOT YOU",LF,"WITH THE hELM AND",LF
-            .asc "SOON THEY'RE UPON",LF,"YOU.",LF,LF
+aStealHelm: .asc "a REBEL GRABS YOUR",LF,"REEL AND HURLS IT",LF
+            .asc "INTO THE WOODS!",ED,ED
+aStealH2:   .asc "aLL THE REBELS SPOT",LF,"YOU WITH THE hELM",LF
+            .asc "AND SOON THEY'RE",LF,"AGRILY UPON YOU.",LF,LF
             .asc "iT SEEMS LIKE THEY",LF,"MOSTLY PLAN TO KILL",LF,"YOU.",LF,LF
             .asc "run!!",ED,ED         
 aCaught:    .asc "iN THE END, YOU DON'T",LF,"KNOW THE FOREST LIKE",LF
@@ -884,7 +887,7 @@ aAtFan:     .asc "fOR EXAMPLE, A COUPLE",LF,"OF THOROUGHLY",LF
 ;              always started if the TimerTrig condition is met.
 ; TimerAct   - The Action ID that's executed when the timer reaches 0.
 ;
-; Memory is allocated to keep track of 112 Timers
+; Memory is allocated to keep track of 48 Timers
 TimerInit:  .asc 1,  1 , 1, 1, 7, 1, 1, 1, 8, 1, 1, 1, 5, 1,ED
 TimerRoom:  .asc 1,  3 ,12,10,10,14,23,48,48,11, 2,19,48,48
 TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
