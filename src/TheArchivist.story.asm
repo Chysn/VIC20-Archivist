@@ -89,17 +89,22 @@ ConfirmTx:  .asc COL_ALERT,"ok.",ED
 ; Game - TALK(7), WIND(8), DIAL(9), SET(2), SWAP(10), BUY(11), CATCH(12)
 ;        OPEN(13), PANIC(14), ENTER(15), SCAN(16), PLAY(17),
 ;        ATTACK/KILL/FIGHT(18), CALL(19), SHOW(2), WEAR(20), STEAL(3), RUN(1)
-;        EAT(21)
+;        EAT/CHEW(21), BREAK/COLLAPSE/BREAK(22)
 ; Verb IDs are 1-indexed
 Verb1:      .byte 'G','M','L','L','E','G','T','D','I','I','W','Z'   ; Basic Verbs
-            .byte 'T','W','D','R','S','B','C','O','P','E'
-            .byte 'S','P','A','K','F','C','S','W','S','R','E',ED
+            .byte 'T','W','D','R','S','B','C','O','P','E','B','C'
+            .byte 'S','P','A','K','F','C','S','W','S','R','E','B'
+            .byte 'C',ED
+            
 VerbL:      .byte 'O','E','K','L','X','T','E','P','Y','I','T','Z'   ; Basic Verbs
-            .byte 'K','D','L','D','P','Y','H','N','C','R'
-            .byte 'N','Y','K','L','T','L','W','R','L','N','T'
+            .byte 'K','D','L','D','P','Y','H','N','C','R','K','E'
+            .byte 'N','Y','K','L','T','L','W','R','L','N','T','T'
+            .byte 'W'
+            
 VerbID:     .byte  1,  1,  2,  2,  2,  3,  3,  4,  5,  5,  6,  6    ; Basic Verbs
-            .byte  7,  8,  9,  2, 10, 11, 12, 13, 14, 15
-            .byte 16, 17, 18, 18, 18, 19,  2, 20,  3,  1, 21
+            .byte  7,  8,  9,  2, 10, 11, 12, 13, 14, 15, 22, 22
+            .byte 16, 17, 18, 18, 18, 19,  2, 20,  3,  1, 21, 22
+            .byte 21
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ROOMS
@@ -200,14 +205,21 @@ rIntake:    .asc "iNTAKE rOOM",ED,"tHIS CIRCULAR ROOM IS",LF
             .asc "ABOUT A METER AWAY.",LF,LF,"a vERTI-tUBE LEADS",LF
             .asc "DOWN TO aDMIN.",ED
 rOffice:    .asc "aDMIN oFFICE",ED,"tHIS IS A TYPICAL",LF
-            .asc "63RD CENTURY OFFICE,",LF,"IN THAT IT CONTAINS",LF
+            .asc "63RD-CENTURY OFFICE,",LF,"IN THAT IT CONTAINS",LF
             .asc "LITTLE. aDMIN WORK",LF
             .asc "NO LONG REQUIRES",LF
-            .asc "EQUIPMENT.",LF,LF
+            .asc "EQUIPMENT AS IT DOES",LF,"IN YOUR DAY.",LF,LF
             .asc "tHE bOSS IS STANDING",LF,"AGAINST A WALL, EYES",LF
             .asc "CLOSED, HARD AT WORK.",LF,LF
             .asc "a RED SIGN HANGS ON",LF,"THE DOOR TO THE EAST.",ED
-rPlaza:     .asc "pLAZA",ED,ED
+rPlaza:     .asc "pLAZA",ED,"oFF-HOURS, A WORLD-",LF
+            .asc "CLASS ROSE GARDEN",LF,"ENCIRCLES THE",LF
+            .asc "BUILDING. yOU GET TO",LF,"SEE IT A COUPLE TIMES",LF
+            .asc "A YEAR.",LF,LF
+            .asc "dURING THE WORKDAY--",LF,"13 TO 17--THE BUBBLE",LF
+            .asc "IS ENGAGED, ITS INNER",LF,"SURFACE A SWIRLING",LF
+            .asc "RED MIST THAT BLOTS",LF,"OUT EVERYTHING BUT",LF
+            .asc "THE ENTRANCE TO THE",LF,"WEST.",ED
 
             ; Graff House, 1776
 rCorner:    .asc "cORNER",ED,"tHE CORNER OF 7TH AND",LF,"mARKET sTREET,",LF
@@ -328,7 +340,7 @@ rCamp:      .asc "vANDE eNCAMPMENT",ED,"tEHREDEL, lAN gES.",LF,LF
             .asc "fOREST EXTENDS",LF,"WITHOUT END IN EVERY",LF
             .asc "DIRECTION BEYOND THIS",LF,"CLEARING.",LF,LF
             .asc "tHE rEVOLUTION BEGAN",LF,"TODAY, SO THIS",LF
-            .asc "CAMP IS ABANDONED.",LF,"oNLY A lOOKOUT tOWER",LF
+            .asc "CAMP IS ABANDONED.",LF,"oNLY A LOOKOUT TOWER",LF
             .asc "EXTENDS UP INTO A",LF,"TREE.",ED
 rLookout:   .asc "vANDE lOOKOUT",ED,"yOU LOOK TO WHAT YOU",LF
             .asc "THINK IS THE EAST,",LF,"WHERE vANDE'S BAND OF",LF
@@ -345,7 +357,7 @@ rFront:     .asc "pREW wAR fRONT",ED,"tHE FRONT IS",LF
             .asc "WOUNDS AND WEAPONS.",LF,LF,"a mEDI-tENT OPENS TO",LF
             .asc "THE EAST.",ED
 rMediTent:  .asc "mEDI-tENT",ED,"aLTHOUGH NOT AS WELL",LF,"EQUIPPED AS IT COULD"
-            .asc LF,"BE, THE TECHNOLOGY IN",LF,"THIS TENT MAKES 21ST",LF
+            .asc LF,"BE, THE TECHNOLOGY IN",LF,"THIS TENT MAKES 21ST-",LF
             .asc "CENTURY MEDICINE LOOK",LF,"LIKE CLUELESS",LF
             .asc "ALCHEMY.",LF,LF
             .asc "tHE MEDIC HERE IS",LF,"BUSY, AND DOESN'T",LF
@@ -374,41 +386,45 @@ rMediTent:  .asc "mEDI-tENT",ED,"aLTHOUGH NOT AS WELL",LF,"EQUIPPED AS IT COULD"
 Item1:      .byte 'C','C','B','R','S','W','1','D','1','I','*','J','B' ; (1-13)
             .byte 'T','C','1','G','*','*','*','1','S','P','I','N','P' ; (14-26)
             .byte 'B','F','S','G','E','2','K','4','G','W','W','W','T' ; (27-39)
-            .byte 'T','T','B','T','*','3','G','B','R','M','V','P','H' ; (40-52)
-            .byte 'P','D','*','B','B','C','S','P','J','M','F',ED
+            .byte 'T','T','B','T','*','3','R','K','R','M','V','P','H' ; (40-52)
+            .byte 'P','D','*','B','B','C','S','P','J','M','F','B','P'  ; (53-65)
+            .byte ED
 ItemL:      .byte 'R','E','S','L','N','H','6','K','1','E','*','N','L'
             .byte 'T','N','4','E','*','*','*','C','S','E','S','E','T'
             .byte 'T','S','L','M','E','2','D','2','R','H','H','H','S'
-            .byte 'S','S','Y','E','*','9','N','E','S','C','E','R','M'
-            .byte 'R','A','*','U','U','K','N','S','S','N','N'
+            .byte 'S','S','Y','E','*','9','K','T','S','C','E','R','M'
+            .byte 'R','A','*','U','U','K','N','S','S','N','N','E','N'
+            
 ItemRoom:   .byte  1 , 1,  2 , 2 , 1 , 0,  1 , 6 , 1 ,23 , 6 , 0 , 0
             .byte  0 , 0,  1 ,13 ,11 , 0,  0 , 1 ,19 ,21 , 0 , 21,20
             .byte 21 ,20, 20 , 0 , 0 , 1, 25 , 25,32 ,29 ,28 , 32,29
             .byte 28 ,32,  9 ,33, 33 , 0, 35 , 35,48 ,50 ,50 , 50,50
-            .byte  0,  0, 47 , 8,  0 , 7,  2 , 52,52 ,23 ,11
+            .byte  0,  0, 47 , 8,  0 , 7,  2 , 52,52 ,23 ,11 , 3 ,35
+            
 ItemProp:   .byte  3 , 3,  3 , 0,  3 , 8,  3 ,$40, 3 ,$88, 7 , 2 ,$40
             .byte  0 , 0,  3 , 1 , 7 , 7,  7 , 3,  3 , 0 ,35 , 0 , 0
             .byte  0 , 2,$40 , 0 , 0 , 3,  3 , 3,$40 , 3 , 3 , 3 , 0
             .byte  0 , 0,  3 , 3 , 7 , 3,  0 , 0,  3 , 3 , 3 , 3, $40
-            .byte  3 , 3,  7 , 3 , 3 ,11,  3 , 0,  0 , 3 , 3
+            .byte  3 , 3,  7 , 3 , 3 ,11,  3 , 0,  0 , 3 , 3 , 3,  0
+            
 ItemTxtL:   .byte <iCursor,<iConsole,<iBoss,<iReel,<iQuota,<iWatch,<iYear
             .byte <iDesk,<iYear,<iPhone,0,<iJefferson,<iBall,<iTicket
             .byte <iSixpence,<iYear,<iGlove,0,0,0,<iYear,<iSarc,<iPlaque
             .byte <iIllus,<iNecklace,<iPendant,<iBracelet,<iFigurines,<iSandal
             .byte <iGum,<iEye,<iYear,<iKeypad,<iLUE,<iGuitar,<iWB,<iWB,<iWB
-            .byte <iT,<iT,<iT,<iBoy,<iTable,0,<iYear,<iGreenTot,<iBlueTot
+            .byte <iT,<iT,<iT,<iBoy,<iTable,0,<iYear,<iRook,<iKnight
             .byte <iRebels,<iMedic,<iVande,<iPrinter,<iHelm,<iActPrint,0,0
             .byte <iBureau,<iBureau,<iClock,<iWarnSign,<iPeanuts,<iJacks
-            .byte <iMan,<iFan
+            .byte <iMan,<iFan,<iBubble,<iPawn
 ItemTxtH:   .byte >iCursor,>iConsole,>iBoss,>iReel,>iQuota,>iWatch,>iYear
             .byte >iDesk,>iYear,>iPhone,0,>iJefferson,>iBall,>iTicket
             .byte >iSixpence,>iYear,>iGlove,0,0,0,>iYear,>iSarc,>iPlaque
             .byte >iIllus,>iNecklace,>iPendant,>iBracelet,>iFigurines,>iSandal
             .byte >iGum,>iEye,>iYear,>iKeypad,>iLUE,>iGuitar,>iWB,>iWB,>iWB
-            .byte >iT,>iT,>iT,>iBoy,>iTable,0,>iYear,>iGreenTot,>iBlueTot
+            .byte >iT,>iT,>iT,>iBoy,>iTable,0,>iYear,>iRook,>iKnight
             .byte >iRebels,>iMedic,>iVande,>iPrinter,>iHelm,>iActPrint,0,0
             .byte >iBureau,>iBureau,>iClock,>iWarnSign,>iPeanuts,>iJacks
-            .byte >iMan,>iFan
+            .byte >iMan,>iFan,>iBubble,>iPawn
 
 ; Item Descriptions
 iCursor:    .asc ED,"tHE CURSOR EVOKES A",LF
@@ -446,9 +462,8 @@ iQuota:     .asc ED
             .asc "    ",221,    "  ",190,"2022    ",221,LF
             .asc "    ",221,    "  ",190,"3449    ",221,LF
             .asc "    ",173,192,192,192,192,192,192,192,192,192,192,192,189,ED
-iWatch:     .asc "pOCKET watch",ED,"18TH cENTURY. a GIFT",LF
-            .asc "FROM dAD. oRNATE.",LF,LF,"yOU USUALLY LEAVE IT",LF
-            .asc "IN THE iNTAKE rOOM.",LF,ED
+iWatch:     .asc "pOCKET watch",ED,"18TH-CENTURY. a GIFT",LF
+            .asc "FROM dAD. oRNATE.",LF,LF,"wICKED ACCURATE:",ED
 iYear:      .asc "jUST A YEAR",ED,"dial THE YEAR INTO",LF,"THE CONSOLE.",ED
 iDesk:      .asc "jEFFERSON'S desk",ED,"tHIS IS THE DESK THAT",LF
             .asc "tHOMAS jEFFERSON IS",LF,"USING TO WRITE THE",LF
@@ -531,8 +546,8 @@ iTable:     .asc ED,"a ROUND BISTRO TABLE,",LF
 iGreenTot:  .asc "green tOTEM",ED,"tHIS WOODEN CARVING",LF
             .asc "OF A TORTOISE IS",LF,"GREEN, FOR ITS FOREST",LF
             .asc "HOME. iT'S 4CM TALL.",ED
-iBlueTot:   .asc "blue tOTEM",ED,"tHIS WOODEN CARVING",LF
-            .asc "OF A SWIFT IS BLUE,",LF,"FOR ITS SKY HOME.",LF
+iRedTot:    .asc "red tOTEM",ED,"tHIS WOODEN CARVING",LF
+            .asc "OF A SWIFT IS RED,",LF,"FOR ITS SKY HOME.",LF
             .asc "iT'S 9CM TALL.",ED
 iRebels:    .asc ED,"vANDE'S rEBELS ARE",LF,"FIGHTING FOR FREEDOM",LF
             .asc "AND EQUALITY AGAINST",LF,"THE TECHNO-REGIME,",LF
@@ -546,7 +561,7 @@ iVande:     .asc ED,"vANDE HAS BEEN",LF,"PIERCED THROUGH THE",LF
             .asc "KNOW SHE REIGNS BY",LF,"TERROR FOR THE NEXT",LF
             .asc "70 YEARS, BUT TODAY",LF,"SHE LOOKS VULNERABLE",LF
             .asc "AND... MORTAL.",ED
-iPrinter:   .asc ED,"tHE HEIGHT OF 35TH",LF
+iPrinter:   .asc ED,"tHE HEIGHT OF 35TH-",LF
             .asc "CENTURY MEDICINE, THE",LF
             .asc "PRINTER ALLOWS ONE TO",LF,"scan A SOURCE OF dna,",LF
             .asc "AND THEN enter THE",LF,"NAME OF THE ORGAN TO",LF
@@ -565,9 +580,8 @@ iClock:     .asc ED,"sTANDING A STATELY 3M",LF,"TALL, THIS gERMAN",LF
             .asc "CLOCK'S MOVEMENT CAN",LF,"BE HEARD THROUGHOUT",LF
             .asc "THE QUIET HOME.",LF,LF,"iTS FACE IS COVERED",LF
             .asc "WITH CARVINGS OF",LF,"BIRDS AND READS",ED
-iWarnSign:  .asc ED,COL_ALERT,"   bubble to remain",LF,LF,"   unbroken  during"
-            .asc LF,LF,"   business   hours",LF,LF,"   alarm will sound",LF,LF
-            .asc "   if opened",ED
+iWarnSign:  .asc ED,"         exit",LF,LF,"   bubble to remain",LF,LF
+            .asc "   engaged   during",LF,LF,"   business   hours",ED
 iPeanuts:   .asc "pEANUTS",ED,"eXTRA-SALTY!",ED
 iJacks:     .asc "cRACKER jacks",ED,"a FAVORITE BETWEEN",LF,
             .asc "1896 AND 2220, WHEN",LF,"CORN WENT EXTINCT.",LF,LF
@@ -578,6 +592,19 @@ iMan:       .asc ED,"hE'S NO LONGER IN",LF,"VIEW. hE HURRIED INTO",LF
             .asc "THE ROOM LABELED",LF,"sECURITY.",ED
 iFan:       .asc ED,"tHIS PLACE IS FILLED",LF,"WITH 'EM! aNY",LF
             .asc "SPECIFIC ONE IS LOST",LF,"IN THE PACK.",ED
+iBubble:    .asc ED,"tHE BUBBLE IS A KEY",LF,"PART OF THE SYSTEM;",LF
+            .asc "IT ISOLATES THE",LF,"CURSOR FROM THE REST",LF
+            .asc "OF THE UNIVERSE.",LF,LF
+            .asc "uNTIL IT'S COLLAPSED",LF,"THE ONLY WAY IN OR",LF
+            .asc "OUT OF THE BUILDING",LF,"IS VIA CURSOR. yOU",LF
+            .asc "CAN EVEN CURSOR HOME,",LF,"ALTHOUGH YOU do HAVE",LF
+            .asc "A JOB...",ED
+iRook:      .asc "wHITE rook",ED,"yOU RECOGNIZE THIS",LF,"AS A PIECE FROM A",LF
+            .asc "sTAUNTON CHESS",LF,"SET.",ED
+iKnight:    .asc "bLACK knight",ED,"yOU RECOGNIZE THIS",LF,"AS A PIECE FROM A",LF
+            .asc "sTAUNTON CHESS",LF,"SET.",ED
+iPawn:      .asc "wHITE pawn",ED,"yOU RECOGNIZE THIS",LF,"AS A PIECE FROM A",LF
+            .asc "sTAUNTON CHESS",LF,"SET.",ED
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; STORY ACTIONS
@@ -626,43 +653,51 @@ ActVerb:    .byte 7,8,EV,9,9,3, 3,  7,10, 10,10,EV, 9,11,EV,12,12,12 ; 0-17
             .byte EV, 9,13,2,2,2,2,2,2,2,                            ; 18-27
             .byte 14, 9,16,15,15,EV,17,7, 11,18,EV, 2, 9, 7, 7, 7    ; 28-43
             .byte 16,15,EV,18,18,18,16,16,EV,EV,EV,19,13,13,EV,EV,EV ; 44-60
-            .byte 20,20,21,21,15,EV,18,EV,ED                          
+            .byte 20,20,21,21,15,EV,18,EV,22,21,ED 
+                                 
 ActItem:    .byte 3,4,0, 7,9,8, 8, 12,10,  4, 0, 0,16,14, 0,13,13,13
             .byte 0, 21,22,24,24,24,24,24,24,24
             .byte 0, 32,31,34, 0, 0,35,42, 8, 0, 0,43,45,48,49,50
             .byte 30,31, 0,12,48,42,54, 0, 0, 0, 0, 0,56,56, 0, 0, 0
-            .byte 29,52,60,61, 0, 0,63, 0
+            .byte 29,52,60,61, 0, 0,63, 0,64,30
+            
 ActInRoom:  .byte 0,0,0, 0,0,0, 0,  6, 6,  6, 6, 0, 0, 9, 0,11,11,11
             .byte 0,  0, 0,16,17,18,19,20,21,22
             .byte 0,  0,24,25,25, 0, 0, 9, 6, 0, 0,33, 0,48,50,50
             .byte 50,50, 0, 0, 0, 0,50,50,48,48, 0, 0, 8, 8,11, 0, 0
-            .byte  0, 0, 0, 0,25,48,11,48
+            .byte  0, 0, 0, 0,25,48,11,48, 3, 0
+            
 ActInvCon:  .byte 0,4,0, 0,0,0, 0,  0,10,  4, 0, 0, 0,15, 0, 0,17, 0
             .byte 13, 0, 0,0,0,0,0,0,0,0
             .byte 0,  0,31, 0, 0, 0,35,14, 0, 0, 0, 0, 0, 0, 0, 0
             .byte 30,30, 0, 0, 0, 0, 0,0 ,52,52, 0,10, 0, 0, 0, 0, 0
-            .byte 29,52,60,61, 0,52, 0,52
+            .byte 29,52,60,61, 0,52, 0,52, 0,30
+            
 ActRoomCon: .byte 3,0,0, 1,1,11,12, 0,12, 12,12, 0, 1, 0, 0,20,19,19
             .byte 0,  1,22,0,0,0,0,0,0,0
             .byte 0,  1, 0, 0, 1, 0, 0, 0,12, 0, 0,44, 1, 0, 0, 0
             .byte 51,53, 0,12,48,42, 0, 1, 4, 0, 0, 0, 0, 0,19, 0, 0
-            .byte 0,  0, 0, 0, 0, 0, 0, 0
+            .byte 0,  0, 0, 0, 0, 0, 0, 0, 0, 0
+            
 ActInvExcl: .byte 0,1,0, 0,0,8, 8,  8,  8, 8, 8,14, 0, 0, 0, 0, 0, 0
             .byte 0,  0, 0,0,0, 0,  0,  0, 0, 0
             .byte 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             .byte 0, 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,10
-            .byte 0,  0, 0, 0, 0, 0, 0, 4
-ActFrom:    .byte 1,0,0, 0,0,11,1,  1, 10, 4, 1, 0, 0,15,18,1, 17,19
+            .byte 0,  0, 0, 0, 0, 0, 0, 4, 0, 0
+            
+ActFrom:    .byte 1,0,1, 0,0,11,1,  1, 10, 4, 1, 0, 0,15,18,1, 17,19
             .byte 0,  0, 1,1,1, 1,  1,  1, 1, 1
             .byte 1,  0, 0, 0, 1, 1, 1, 1, 1, 1, 0,44, 0, 1, 1, 1
             .byte 51,31, 0, 1, 0, 0, 1, 1, 4, 1, 0, 1,15,56, 1, 1, 0
-            .byte 1,  1, 1, 1, 0, 1, 0, 1
-ActTo:      .byte 1,1,0, 4,0,12,1,  1,  8, 8, 1,9 , 9,14,19,1, 13,20
+            .byte 1,  1, 1, 1, 0, 1, 0, 1, 1,30
+            
+ActTo:      .byte 1,1,1, 4,0,12,1,  1,  8, 8, 1,9 , 9,14,19,1, 13,20
             .byte 15,16, 1,1,1,1,1,1,1,1
             .byte 1 ,23,25,26, 1, 1, 1, 1, 1, 1, 0,30,34, 1, 1, 1
             .byte 53, 0, 0, 1, 51,15,1,1,$af, 1, 0, 1, 0,57, 1, 1, 0
-            .byte 1,  1, 1, 1,53, 1, 9, 1
-ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
+            .byte 1,  1, 1, 1,53, 1, 9, 1, 1,$a1
+            
+ActResTxtL: .byte <aBoss,<aHome,<aToPlaza,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aJeffOffer,<aJeffAcc,<aJeffAcc,<aJeffDecl
             .byte <aNeedTix,<aX,<aBuyTix,<aBallHit,<aMissed,<aTryCatch,0
             .byte <aToJail,<aX,<aOpSarc,<iIllus,<iIllus,<iIllus,<iIllus
@@ -672,8 +707,10 @@ ActResTxtL: .byte <aBoss,<aHome,<aDie,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aPrEnter,<aWin,<aAtJeff,<aAtRebels,<aAtBoy,<aScDNA
             .byte <aPrFail,<aStealHelm,0,<aCaught,<aCell,<aRevCoin,0
             .byte <aBallFly,<aAdEntry,<aTrip,<aWear,<aWear,<aYum,<aYum
-            .byte <aLockdown,<aComing,<aAtFan,<aStealH2
-ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
+            .byte <aLockdown,<aComing,<aAtFan,<aStealH2,<aBrBubble
+            .byte <aChewGum
+            
+ActResTxtH: .byte >aBoss,>aHome,>aToPlaza,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aJeffOffer,>aJeffAcc,>aJeffAcc,>aJeffDecl
             .byte >aNeedTix,>aX,>aBuyTix,>aBallHit,>aMissed,>aTryCatch,0
             .byte >aToJail,>aX,>aOpSarc,>iIllus,>iIllus,>iIllus,>iIllus
@@ -683,7 +720,8 @@ ActResTxtH: .byte >aBoss,>aHome,>aDie,>aX,>a1841,>aJeffEnter,>aJeffSay
             .byte >aPrEnter,>aWin,>aAtJeff,>aAtRebels,>aAtBoy,>aScDNA
             .byte >aPrFail,>aStealHelm,0,>aCaught,>aCell,>aRevCoin,0
             .byte >aBallFly,>aAdEntry,>aTrip,>aWear,>aWear,>aYum,>aYum
-            .byte >aLockdown,>aComing,>aAtFan,>aStealH2
+            .byte >aLockdown,>aComing,>aAtFan,>aStealH2,>aBrBubble
+            .byte >aChewGum
             
 ; Action Results
 DIAG:       .asc "aCTION success",ED,"aCTION failure",ED
@@ -696,13 +734,11 @@ aHome:      .asc CLRHOME,"bEING REELED BACK IS",LF,"ALWAYS DISCONCERTING.",LF,LF
             .asc "WEARING A vr HEADSET",LF,"OF A DIFFERENT ROLLER",LF
             .asc "COASTER.",LF,LF,"tHE SENSATION LASTS",LF
             .asc "ONLY A MOMENT AND",LF,"YOU'RE BACK TO YOUR",LF
-            .asc "iNTAKE rOOM.",ED,ED
+            .asc "iNTAKE rOOM.",ED
             .asc "yOU DO NOT HAVE A",LF,"TEMPORAL REEL.",ED
-aDie:       .asc "tHE bOSS RUSHES TO",LF
-            .asc "TACKLE YOU BUT IT'S",LF,"TOO LATE. yOU NOTICE",LF
-            .asc "A MAGNIFICENT FUTURE",LF,"CITYSCAPE FOR ONLY A",LF
-            .asc "MOMENT BEFORE THE",LF,"bUBBLE COLLAPSES",LF
-            .asc "AROUND YOU AND YOU",LF,"STOP EXISTING.",ED,ED
+aToPlaza:   .asc "aS YOU LEAVE THE",LF,"BUILDING, THE bOSS",LF
+            .asc "JOKES, 'hEY, GRAB ME",LF,"AN ICE CREAM WHILE",LF
+            .asc "YOU'RE OUT!'",ED
 aX:         .asc CLRHOME,"yOU DIAL THE YEAR ON",LF,"THE CONSOLE.",LF,LF
             .asc "tHE CURSOR'S WHEELS",LF,"SPIN FASTER. yOU FEEL",LF
             .asc "A HOT LOUD RUSH OF",LF,"AIR LIKE A LOCOMOTIVE",LF
@@ -867,7 +903,13 @@ aComing:    .asc COL_ALERT,"yOU HEAR SHOUTING",LF,"VOICES GETTING",LF
 aAtFan:     .asc "fOR EXAMPLE, A COUPLE",LF,"OF THOROUGHLY",LF
             .asc "INTOXICATED FANS GRAB",LF,"YOU BY BOTH ARMS AND",LF
             .asc "THROW YOU OUT OF THE",LF,"BALLPARK.",ED,ED
-            
+aBrBubble:  .asc "iF THE BUBBLE WERE TO",LF,"COLLAPSE NOW, YOU AND",LF
+            .asc "THE bOSS WOULD CEASE",LF,"TO HAVE EXISTED.",LF,LF
+            .asc "bUT GOOD NEWS! YOU",LF,"LACK ACCESS TO DO",LF
+            .asc "THAT.",LF,LF,"nOW QUIT WITH THE",LF,"PERFORMATIVE NIHILISM",LF
+            .asc "AND GET TO WORK.",ED
+aChewGum:   .asc "eW.",ED,"yOU HAVE NO GUM.",ED
+                        
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; TIMERS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;            

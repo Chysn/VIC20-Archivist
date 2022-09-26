@@ -194,12 +194,12 @@ Transcribe: ldx #0              ; Buffer index
             bcc NoVerb          ; Show an error if verb not found
             jsr GetPattern      ; Find the next two-character pattern
             jsr GetItemID       ; Use the pattern to get Item ID from database
-            ; Fall through to Process
+            ; Fall through to StoryAct
 
-; Process Command
-; Start with the Action Engine. Look through the Action Database for 
+; Story Action Lookup
+; Start with the Action Engine. Look through the Story Actions for 
 ; matching commands and execute them.            
-Process:    ldx #$ff            ; Look for actions for this command's verb
+StoryAct:   ldx #$ff            ; Look for actions for this command's verb
 next_act:   inx                 ; ,,
             lda ActVerb,x       ; ,,
             bne have_verb       ; After story actions
@@ -316,7 +316,7 @@ ch_rooms:   ldy FROM_ID         ;   Get the From item's current location
 eval_r:     rts
 
 ; Perform Basic Actions
-; After the action processing is complete      
+; After the story action processing is complete      
 ; Built-In Actions include
 ;   - GO
 ;   - LOOK
@@ -324,7 +324,7 @@ eval_r:     rts
 ;   - DROP   
 ;   - INVENTORY
 BasicAct:   bit ACT_SUCCESS     ; Bypass the basic actions if one or more
-            bmi h_timer         ;   database actions was successful
+            bmi h_timer         ;   story actions was successful
             lda VERB_ID         ; Get the entered verb
             cmp #GO_CMD         ; Handle GO/MOVE
             bne ch_look_c       ; ,,
