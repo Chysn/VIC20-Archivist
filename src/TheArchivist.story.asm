@@ -89,22 +89,22 @@ ConfirmTx:  .asc COL_ALERT,"ok.",ED
 ; Game - TALK(7), WIND(8), DIAL(9), SET(2), SWAP(10), BUY(11), CATCH(12)
 ;        OPEN(13), PANIC(14), ENTER(15), SCAN(16), PLAY(17),
 ;        ATTACK/KILL/FIGHT(18), CALL(19), SHOW(2), WEAR(20), STEAL(3), RUN(1)
-;        EAT/CHEW(21), BREAK/COLLAPSE/BREAK(22)
+;        EAT/CHEW(21), BREAK/COLLAPSE/BREAK/POP(22)
 ; Verb IDs are 1-indexed
 Verb1:      .byte 'G','M','L','L','E','G','T','D','I','I','W','Z'   ; Basic Verbs
             .byte 'T','W','D','R','S','B','C','O','P','E','B','C'
             .byte 'S','P','A','K','F','C','S','W','S','R','E','B'
-            .byte 'C',ED
+            .byte 'C','P',ED
             
 VerbL:      .byte 'O','E','K','L','X','T','E','P','Y','I','T','Z'   ; Basic Verbs
             .byte 'K','D','L','D','P','Y','H','N','C','R','K','E'
             .byte 'N','Y','K','L','T','L','W','R','L','N','T','T'
-            .byte 'W'
+            .byte 'W','P'
             
 VerbID:     .byte  1,  1,  2,  2,  2,  3,  3,  4,  5,  5,  6,  6    ; Basic Verbs
             .byte  7,  8,  9,  2, 10, 11, 12, 13, 14, 15, 22, 22
             .byte 16, 17, 18, 18, 18, 19,  2, 20,  3,  1, 21, 22
-            .byte 21
+            .byte 21, 22
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ROOMS
