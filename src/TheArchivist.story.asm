@@ -905,7 +905,7 @@ aAtFan:     .asc "fOR EXAMPLE, A COUPLE",LF,"OF THOROUGHLY",LF
             .asc "THROW YOU OUT OF THE",LF,"BALLPARK.",ED,ED
 aBrBubble:  .asc "iF THE BUBBLE WERE TO",LF,"COLLAPSE NOW, YOU AND",LF
             .asc "THE bOSS WOULD CEASE",LF,"TO HAVE EXISTED.",LF,LF
-            .asc "bUT GOOD NEWS! YOU",LF,"LACK ACCESS TO DO",LF
+            .asc "bUT GOOD NEWS! yOU",LF,"LACK ACCESS TO DO",LF
             .asc "THAT.",LF,LF,"nOW QUIT WITH THE",LF,"PERFORMATIVE NIHILISM",LF
             .asc "AND GET TO WORK.",ED
 aChewGum:   .asc "eW.",ED,"yOU HAVE NO GUM.",ED
