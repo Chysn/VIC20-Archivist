@@ -207,7 +207,7 @@ rIntake:    .asc "iNTAKE rOOM",ED,"tHIS CIRCULAR ROOM IS",LF
 rOffice:    .asc "aDMIN oFFICE",ED,"tHIS IS A TYPICAL",LF
             .asc "63RD-CENTURY OFFICE,",LF,"IN THAT IT CONTAINS",LF
             .asc "LITTLE. aDMIN WORK",LF
-            .asc "NO LONG REQUIRES",LF
+            .asc "NO LONGER REQUIRES",LF
             .asc "EQUIPMENT AS IT DOES",LF,"IN YOUR DAY.",LF,LF
             .asc "tHE bOSS IS STANDING",LF,"AGAINST A WALL, EYES",LF
             .asc "CLOSED, HARD AT WORK.",LF,LF
@@ -608,10 +608,15 @@ iPawn:      .asc "wHITE pawn",ED,"yOU RECOGNIZE THIS",LF,"AS A PIECE FROM A",LF
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; STORY ACTIONS
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;            
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+; QUALIFICATION
+;---------------          
 ;   ActVerb    - The Verb ID for this action
 ;   ActItem    - The Item ID for this action. If 0, no item is used.
 ;   ActInRoom  - The Room ID for this action. If 0, no room is required.
+;
+; EVALUATION
+;---------------
 ;   ActInvCon  - The player must be holding this Item ID for success in this
 ;                action. If 0, no item needs to be held.
 ;   ActRoomCon - The Item ID must be in this room for success in this action.
@@ -621,14 +626,20 @@ iPawn:      .asc "wHITE pawn",ED,"yOU RECOGNIZE THIS",LF,"AS A PIECE FROM A",LF
 ;                be in inventory.
 ;   ActInvExcl - The player must NOT be holding this Item ID for success in this
 ;                action. If 0, no item is excluded.
+; 
+; RESULT
+;---------------
 ;   ActFrom    - If the action is successful, specifies an item that can be
-;                changed to another item.
+;                replaced with another item. The ActTo item will be set to
+;                wherever the ActFrom item is, and the ActFrom item is sent
+;                to room 0.
 ;
-;                If 0, then the player will be moved to the Room ID specified 
-;                in ActTo
+;                If ActFrom=0, then the player will be moved to the Room ID
+;                specified in in ActTo
 ;
 ;                If bit 7 is set, no resolution is done, only the message is
 ;                shown.
+;
 ;   ActTo      - If the action is successful, specifies that the item specified
 ;                in ActFrom will be changed to the item in ActTo. This will
 ;                happen in any room that the item is in, as well as the player's
@@ -644,8 +655,6 @@ iPawn:      .asc "wHITE pawn",ED,"yOU RECOGNIZE THIS",LF,"AS A PIECE FROM A",LF
 ;                If both ActFrom and ActTo are 0, then the success text is 
 ;                displayed and the game ends.
 ;
-;                If both ActFrom and ActTo are the same non-zero Item ID, only
-;                messages will be displayed.
 ;   ActResTxt  - The address of the success and failure messasges
 ;                (The success message is terminated by ED, after which is the
 ;                 failure message, also terminated by ED)
