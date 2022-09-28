@@ -626,6 +626,9 @@ iPawn:      .asc "wHITE pawn",ED,"yOU RECOGNIZE THIS",LF,"AS A PIECE FROM A",LF
 ;
 ;                If 0, then the player will be moved to the Room ID specified 
 ;                in ActTo
+;
+;                If bit 7 is set, no resolution is done, only the message is
+;                shown.
 ;   ActTo      - If the action is successful, specifies that the item specified
 ;                in ActFrom will be changed to the item in ActTo. This will
 ;                happen in any room that the item is in, as well as the player's

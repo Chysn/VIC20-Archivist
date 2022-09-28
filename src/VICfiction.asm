@@ -178,10 +178,10 @@ enter:      jsr CHROUT          ; Print the RETURN
             cmp #'*'            ; System command
             bne ch_sp           ; ,,
             jmp System          ; ,,
-ch_sp:      ldx #0
-            jsr GetPattern
-            lda PATTERN
-            beq Main
+ch_sp:      ldx #0              ; Discard leading spaces
+            jsr GetPattern      ; ,,
+            lda PATTERN         ; ,,
+            beq Main            ; Drop to next line if no input
             lda GAMEOVER        ; If game is over, allow only system
             bne Main            ;   commands
             ; Fall through to Transcribe
@@ -265,6 +265,7 @@ success:    sec                 ; SUCCESS!
             jsr PrintMsg        ;   ,,
 do_result:  lda ActFrom,x       ; Now for the result. Get the From ID
             bne is_from         ;   Is there a From ID?
+            bmi eval_r          ;   If high bit of FROM is set, message only
             lda ActTo,x         ; If there's no From ID, is there a To ID?
             bne move_pl         ;   If From=0 and To=ID then move player
 game_over:  inc GAMEOVER        ; Flag game as over
