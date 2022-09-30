@@ -1,4 +1,4 @@
 #!/bin/bash
 
-minipro -p W27C512@DIP28 -w ./vic/archivist.eep
+minipro -p W27C512@DIP28 -w ./vic/TheArchivist-Release.eep
 
