@@ -263,6 +263,19 @@ success:    sec                 ; SUCCESS!
             tay                 ;   ,,
             lda ActResTxtL,x    ;   ,,
             jsr PrintMsg        ;   ,,
+            lda ActTimer,x      ; Is a timer associated with this action?
+            beq do_result       ; If not, perform the action result
+            bmi set_timer       ; Bit 7 set means set the timer
+            tay                 ; Bit 7 clear means clear the timer
+            lda #0              ; ,,
+            sta TIMER-1,y       ; ,,
+            beq do_result       ; ,,
+set_timer:  and #$7f            ; Mask away bit 7
+            tay                 ; Y = Timer ID
+            lda TIMER-1,y       ; Is the timer already set?
+            bne do_result       ;   If so, do result
+            lda TimerInit-1,y   ; Get timer init value
+            sta TIMER-1,y       ; Initialize the timer
 do_result:  lda ActFrom,x       ; Now for the result. Get the From ID
             bne is_from         ;   Is there a From ID?
             bmi eval_r          ;   If high bit of FROM is set, message only
@@ -281,20 +294,8 @@ is_from:    sta FROM_ID         ; Store the From ID temporarily
             bne xform           ;   If so, do the transform
             ldy FROM_ID         ; If To=0 then move the item in From ID to
             lda CURR_ROOM       ;   the current room
-            sta ITEM_ROOM-1,y   ;   ,,
-            sty TEMP            ; TEMP is the Item ID
-            ldy #0              ; X = Timer ID
--loop:      lda TimerInit,y     ; If TimerInit is 0, that's the end of the
-            beq timer_done      ;   timers
-            lda TimerItem,y     ; Is this an item timer?
-            cmp TEMP            ; Is this a timer for this item?
-            bne next_timer      ;   If not, iterate to next timer
-            lda TimerInit,y     ;   If so, initialize the timer
-            sta TIMER,y         ;   ,,
-next_timer: iny                 ; Get next
-            bne loop            ; ,,            
+            sta ITEM_ROOM-1,y   ;   ,,           
 timer_done: rts                 ; Finish processing this action
-
             ; Transform the FROM item into the TO item
 xform:      sta TO_ID
             cmp FROM_ID         ; If from and to are the same, no transform
@@ -653,24 +654,24 @@ MoveTo:     sta CURR_ROOM
             txa
             pha
             jsr SetRoomAd       ; Set (RM) for room
-ch_room_t:  ldx #$ff            ; Check Room Timers. X is the Room Timer ID
+ch_room_t:  ldx #0              ; Check Room Timers. X is the Timer ID
 -loop:      inx                 ; Advance to next ID 
-            lda TimerInit,x     ; Reached the end of Room Timers?
+            lda TimerInit-1,x   ; Reached the end of Timers?
             beq ch_clear        ;   If so, exit
             lda CURR_ROOM       ; Get the current room
-            cmp TimerRoom,x     ;   Is the timer in this room?
-            bne loop            ;   If not, get next Room Timer            
+            cmp TimerRoom-1,x   ;   Is the timer in this room?
+            bne loop            ;   If not, get next Timer            
             tay                 ; Y=CURR_ROOM. Should timer be initialized?
-            lda TimerTrig,x     ;   ,,
+            lda TimerTrig-1,x   ;   ,,
             cmp #2              ;   If TimerTrig is 2, then init on any entry
             beq init_timer      ;     if timer is not started
             cmp #3              ;   If TimerTrig is 3, then init on any entry
             beq retrig          ;     even if timer is started
             cmp SEEN_ROOM-1,y   ;   If TimerTrig=0, the first time
             bne loop            ;   If TimerTrig=1, second and subsequent times
-init_timer: lda TIMER,x         ; If the timer is already started, don't
+init_timer: lda TIMER-1,x       ; If the timer is already started, don't
             bne loop            ;   start it again
-retrig:     lda TimerTest,x     ; Is there a test associated with this timer?
+retrig:     lda TimerTest-1,x   ; Is there a test associated with this timer?
             beq timer_st        ; ,, If not, skip test evaluation
             stx TEMP+3          ; ,, Save X for this loop
             tax                 ; If so, put that Action ID into X
@@ -678,18 +679,18 @@ retrig:     lda TimerTest,x     ; Is there a test associated with this timer?
             ldx TEMP+3          ; Restore X for this loop
             bit ACT_SUCCESS     ; If the action was not successful, then
             bpl ch_clear        ;   skip timer start
-timer_st:   lda TimerInit,x     ; START TIMER COUNTDOWN!
-            sta TIMER,x         ; ,,
+timer_st:   lda TimerInit-1,x   ; START TIMER COUNTDOWN!
+            sta TIMER-1,x       ; ,,
             bne loop            ; Go back for additional timers
 ch_clear:   jsr AdvTimers       ; Do normal timer advance prior to clear check           
             lda #CLR_TIMERS     ; If the room being entered has the CLEAR TIMERS
             jsr TestRmProp      ;   property, then reset all timers to 0
             beq moveto_r        ;   except for the clock (timer 0).
             ldx #1              ;   ,,
--loop:      lda TimerInit,x     ;   ,, (No TimerInit value means end-of-timers
+-loop:      lda TimerInit-1,x   ;   ,, (No TimerInit value means end-of-timers
             beq moveto_r        ;   ,, ,,)
             lda #0              ;   ,,
-            sta TIMER,x         ;   ,,
+            sta TIMER-1,x       ;   ,,
             inx                 ;   ,,
             bne loop            ;   ,,
 moveto_r:   pla                 ; Restore X for caller
@@ -735,7 +736,7 @@ sees_name:  ldy #7              ; 7 = desc low byte parameter
 ;   1) The player moves to a new room
 ;   2) At least one story action was successful during a turn
 ;      (Cascaded actions on a single turn advance the timer once)     
-AdvTimers:  lda TIMER           ; If the timer is 0, then it's not active
+AdvTimers:  lda TIMER           ; If the timer is 1, then it's not active
             beq adv_room_t      ;   so check other Timers
             clc                 ; Add to timer
             adc TimerDir        ;   $01 for +1, $ff for -1
@@ -744,17 +745,17 @@ AdvTimers:  lda TIMER           ; If the timer is 0, then it's not active
             bne adv_room_t      ;   If not, check Room Timers
             ldx TimerAct        ; Do the specified timeout action
             jsr DoEvent         ; ,,
-adv_room_t: ldx #$00            ; X = Timer index (Timer 0 is the Clock)
--loop:      inx                 ; ,,
-            lda TimerInit,x     ; Does the timer exist?
+adv_room_t: ldx #1              ; X = Timer index (Timer 1 is the Clock, so
+-loop:      inx                 ;   start with 2)
+            lda TimerInit-1,x   ; Does the timer exist?
             beq timer_r         ;   If not, at end of timers, exit
-            lda TIMER,x         ; Does the timer have a value?
+            lda TIMER-1,x       ; Does the timer have a value?
             beq loop            ;   If not, get next timer
-            dec TIMER,x         ; Decrement the timer
+            dec TIMER-1,x       ; Decrement the timer
             bne loop            ; If it hasn't reached 0, get next timer
             txa                 ; Preserve X against event action
             pha                 ; ,,
-            lda TimerAct,x      ; Get Action ID
+            lda TimerAct-1,x    ; Get Action ID
             tax
             jsr DoEvent         ; Perform the event
             pla

@@ -655,6 +655,17 @@ iPawn:      .asc "wHITE pawn",ED,"yOU RECOGNIZE THIS",LF,"AS A PIECE FROM A",LF
 ;                If both ActFrom and ActTo are 0, then the success text is 
 ;                displayed and the game ends.
 ;
+;   ActTimer   - If the action is successful, specifies that a timer will be
+;                initialized or reset.
+;
+;                Bit 0-6 are the Timer ID. If bit 7 is set, the timer will
+;                be started unless it already is running. If bit 7 is clear,
+;                the timer will be disabled (set to 0).
+;
+;                Note that starting a timer in this way ignores TimerRoom,
+;                TimerTest, and TimerTrig; the success of the action is
+;                sufficient to start or stop the timer.
+;
 ;   ActResTxt  - The address of the success and failure messasges
 ;                (The success message is terminated by ED, after which is the
 ;                 failure message, also terminated by ED)
@@ -665,7 +676,7 @@ ActVerb:    .byte 7,8,EV,9,9,3, 3,  7,10, 10,10,EV, 9,11,EV,12,12,12 ; 0-17
             .byte EV, 9,13,2,2,2,2,2,2,2,                            ; 18-27
             .byte 14, 9,16,15,15,EV,17,7, 11,18,EV, 2, 9, 7, 7, 7    ; 28-43
             .byte 16,15,EV,18,18,18,16,16,EV,EV,EV,19,13,13,EV,EV,EV ; 44-60
-            .byte 20,20,21,21,15,EV,18,EV,22,21,ED 
+            .byte 20,20,21,21,15,EV,18,EV,22,21,ED                   ; 61-70
                                  
 ActItem:    .byte 3,4,0, 7,9,8, 8, 12,10,  4, 0, 0,16,14, 0,13,13,13
             .byte 0, 21,22,24,24,24,24,24,24,24
@@ -708,6 +719,12 @@ ActTo:      .byte 1,1,1, 4,0,12,1,  1,  8, 8, 1,9 , 9,14,19,1, 13,20
             .byte 1 ,23,25,26, 1, 1, 1, 1, 1, 1, 0,30,34, 1, 1, 1
             .byte 53, 0, 0, 1, 51,15,1,1,$af, 1, 0, 1, 0,57, 1, 1, 0
             .byte 1,  1, 1, 1,53, 1, 9, 1, 1,$a1
+            
+ActTimer:   .byte 0,0,0, 0,0,0, 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            .byte 0,  0, 0,0,0, 0,  0,  0, 0, 0
+            .byte 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            .byte 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            .byte 0,  0, 0, 0, 0, 0, 0, 0, 0, 0            
             
 ActResTxtL: .byte <aBoss,<aHome,<aToPlaza,<aX,<a1841,<aJeffEnter,<aJeffSay
             .byte <aJeffOffer,<aJeffAcc,<aJeffAcc,<aJeffDecl
@@ -926,7 +943,6 @@ aChewGum:   .asc "eW.",ED,"yOU HAVE NO GUM.",ED
 ; TIMERS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;            
 ; TimerRoom  - The room that causes the timer to start, when entered.
-; TimerItem  - The item that causes the timer to start, when moved via action.
 ; TimerInit  - The number of turns to which the timer is set when started. If
 ;              the value is 1, then the action is triggered immediately upon 
 ;              entering the room.
@@ -942,9 +958,9 @@ aChewGum:   .asc "eW.",ED,"yOU HAVE NO GUM.",ED
 ; TimerAct   - The Action ID that's executed when the timer reaches 0.
 ;
 ; Memory is allocated to keep track of 48 Timers
+; Timers are 1-indexed, and timer #1 is the Clock
 TimerInit:  .asc 1,  1 , 1, 1, 7, 1, 1, 1, 8, 1, 1, 1, 5, 1,ED
 TimerRoom:  .asc 1,  3 ,12,10,10,14,23,48,48,11, 2,19,48,48
-TimerItem:  .asc 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 TimerTrig:  .asc 0,  0,  2, 2, 0, 2, 0, 2, 2, 2, 0, 0, 2, 2
 TimerTest:  .asc 0,  0,  0, 0, 0, 0, 0,53,53, 0, 0, 0,53,53
 TimerAct:   .asc 38, 2, 18,18,14,11,33,52,54,58,59,60,66,68
