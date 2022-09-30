@@ -685,8 +685,8 @@ timer_st:   lda TimerInit-1,x   ; START TIMER COUNTDOWN!
 ch_clear:   jsr AdvTimers       ; Do normal timer advance prior to clear check           
             lda #CLR_TIMERS     ; If the room being entered has the CLEAR TIMERS
             jsr TestRmProp      ;   property, then reset all timers to 0
-            beq moveto_r        ;   except for the clock (timer 0).
-            ldx #1              ;   ,,
+            beq moveto_r        ;   except for the clock (timer 1).
+            ldx #2              ;   ,,
 -loop:      lda TimerInit-1,x   ;   ,, (No TimerInit value means end-of-timers
             beq moveto_r        ;   ,, ,,)
             lda #0              ;   ,,
