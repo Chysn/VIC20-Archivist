@@ -275,7 +275,7 @@ rLeftF:     .asc "lEFT fIELD sTANDS",ED,"eVERYBODY IS",LF
             .asc "WRONG SIDE OF THE",LF,"PARK.",ED
 rCorridor:  .asc "cORRIDOR",ED,"sTANDS ARE TO THE",LF,"NORTH.",ED
 rConces:    .asc "cONCESSION sTAND",ED,"a WOOD STAND WITH AN",LF
-            .asc "ORANGE AWNING OFFERS",LF,"COMPLEMENTARY",LF
+            .asc "ORANGE AWNING OFFERS",LF,"COMPLIMENTARY",LF
             .asc "REFRESHMENTS. tAKE",LF,"SOME!",ED
 rJail:      .asc "dETROIT jAIL",ED,"tHE CELL IS LIKE",LF
             .asc "1.5M BY 1.5M. iT'S",LF,"SUPER EMBARRASSING.",LF,LF
