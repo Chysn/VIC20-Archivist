@@ -275,7 +275,7 @@ rLeftF:     .asc "lEFT fIELD sTANDS",ED,"eVERYBODY IS",LF
             .asc "WRONG SIDE OF THE",LF,"PARK.",ED
 rCorridor:  .asc "cORRIDOR",ED,"sTANDS ARE TO THE",LF,"NORTH.",ED
 rConces:    .asc "cONCESSION sTAND",ED,"a WOOD STAND WITH AN",LF
-            .asc "ORANGE AWNING OFFERS",LF,"COMPLEMENTARY",LF
+            .asc "ORANGE AWNING OFFERS",LF,"COMPLIMENTARY",LF
             .asc "REFRESHMENTS. tAKE",LF,"SOME!",ED
 rJail:      .asc "dETROIT jAIL",ED,"tHE CELL IS LIKE",LF
             .asc "1.5M BY 1.5M. iT'S",LF,"SUPER EMBARRASSING.",LF,LF
@@ -374,7 +374,7 @@ rMediTent:  .asc "mEDI-tENT",ED,"aLTHOUGH NOT AS WELL",LF,"EQUIPPED AS IT COULD"
 ;     Bit 1 = Is un-moveable (cannot move from its room)
 ;     Bit 2 = Is placeholder (cannot be used as an item)
 ;     Bit 3 = Is timekeeping device (shows number of action attempts) 
-;     Bit 4 = (Future Expansion)
+;     Bit 4 = Is follower (item will follow player as they move)
 ;     Bit 5 = (Future Expansion)
 ;     Bit 6 = Is scored (counts as 1 point when dropped in score room)
 ;     Bit 7 = Is light source (rooms with "is dark" can be seen)
@@ -416,6 +416,7 @@ ItemTxtL:   .byte <iCursor,<iConsole,<iBoss,<iReel,<iQuota,<iWatch,<iYear
             .byte <iRebels,<iMedic,<iVande,<iPrinter,<iHelm,<iActPrint,0,0
             .byte <iBureau,<iBureau,<iClock,<iWarnSign,<iPeanuts,<iJacks
             .byte <iMan,<iFan,<iBubble,<iPawn
+            
 ItemTxtH:   .byte >iCursor,>iConsole,>iBoss,>iReel,>iQuota,>iWatch,>iYear
             .byte >iDesk,>iYear,>iPhone,0,>iJefferson,>iBall,>iTicket
             .byte >iSixpence,>iYear,>iGlove,0,0,0,>iYear,>iSarc,>iPlaque
@@ -957,7 +958,10 @@ aChewGum:   .asc "eW.",ED,"yOU HAVE NO GUM.",ED
 ;              always started if the TimerTrig condition is met.
 ; TimerAct   - The Action ID that's executed when the timer reaches 0.
 ;
-; Memory is allocated to keep track of 48 Timers
+; Memory is allocated to keep track of 48 Timers. Regardless of whether you use
+; the clock (timer #1), define its parameters. If you don't use timer, set its
+; TimerInit value to ED (0) as a delimiter.
+;
 ; Timers are 1-indexed, and timer #1 is the Clock
 TimerInit:  .asc 1,  1 , 1, 1, 7, 1, 1, 1, 8, 1, 1, 1, 5, 1,ED
 TimerRoom:  .asc 1,  3 ,12,10,10,14,23,48,48,11, 2,19,48,48

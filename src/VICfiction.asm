@@ -17,6 +17,19 @@
 ;
 ; https://creativecommons.org/licenses/by-nc/4.0/legalcode.txt
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; SCRIPTING
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Command scripting, for regression testing, can be performed using a serial
+; text file, with commands separated by $0d, and then $0d at the end.
+; Scripts can be run from BASIC like this
+;
+; OPEN2,8,2,"SCRIPT,S,R":POKE781,2:SYS65478:SYS8192
+;
+; When the script has completed, control will be turned back over to the
+; keyboard.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 * = $2000                       ; Block 1
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; VICFICTION SETTINGS AND LABELS
@@ -46,6 +59,9 @@ CURR_ROOM   = $1dff             ; Current Room ID
 CASECT      = $0291             ; Disable Commodore case
 VIC         = $9000             ; VIC chip offset
 KBSIZE      = $c6               ; Keyboard buffer size
+STATUS      = $90               ; File status
+OPENFILES   = $98               ; Open logical files
+KEYCVTRS    = $028d             ; Keyboard codes
 
 ; NMI
 NMI         = $ff5b             ; Do nothing (RTI)
@@ -61,6 +77,7 @@ SETLFS      = $ffba             ; Setup logical file
 SETNAM      = $ffbd             ; Setup file name
 SAVE        = $ffd8             ; Save
 LOAD        = $ffd5             ; Load
+CLALL       = $ffe7             ; Clear file table
   
 ; Constants
 SPACE       = $20               ; Space
@@ -81,6 +98,7 @@ IS_INVIS    = $01               ; Item Property - Invisible
 IS_UNMOVE   = $02               ;               - Unmoveable
 IS_PLHOLDER = $04               ;               - Placeholder
 IS_CLOCK    = $08               ;               - Clock display
+IS_FOLLOWER = $10               ;               - Follower
 IS_SCORED   = $40               ;               - Is scored
 IS_LIGHT    = $80               ;               - Light source
 IS_DARK     = $01               ; Room Property - Darkened
@@ -163,7 +181,13 @@ Main:       lda #0              ; Clear the action success and failure
             ldx #0              ; X is buffer index
             stx BUFFER          ; Clear the buffer
 -loop:      jsr CHRIN           ; KERNAL CHRIN
-            cmp #LF             ; Did user press RETURN?
+            ldy OPENFILES       ; Support script testing. Is logical file open?
+            beq ch_eol          ;   If not, work as normal with keyboard
+            bit STATUS          ;   Is this end of file?
+            bvc ch_eol          ;   ,,
+            jsr CLALL           ;   ,, If end of file, close files
+            jmp Main            ;   ,,
+ch_eol:     cmp #LF             ; Did user press RETURN?
             beq enter           ;   If so, go to end of input
             and #$7f            ; Make case-insensitive
             sta BUFFER,x        ; Store in buffer at the index
@@ -173,7 +197,16 @@ Main:       lda #0              ; Clear the action success and failure
 enter:      jsr CHROUT          ; Print the RETURN
             lda #0              ; Add the line-ending null            
             sta BUFFER,x        ; ,,
-            lda BUFFER          ; Look at the first character for a
+            lda OPENFILES       ; Support script testing. Is logical file open?
+            beq no_echo         ;   If not, behave as normal
+            lda #<BUFFER        ;   If so, echo the command
+            ldy #>BUFFER        ;   ,,
+            jsr PRINT           ;   ,,
+            jsr Linefeed
+wait:       lda KEYCVTRS
+            and #$01
+            beq wait
+no_echo:    lda BUFFER          ; Look at the first character for a
             beq Main            ;   couple things.
             cmp #'*'            ; System command
             bne ch_sp           ; ,,
@@ -650,11 +683,26 @@ yes_in_rm:  lda TEMP
             
 ; Move To Room
 ; Set current room to A and add room parameter address to (RM)
-MoveTo:     sta CURR_ROOM
-            txa
+MoveTo:     ldy CURR_ROOM       ; Stash the previous room for the followers
+            sty TEMP            ; ,,
+            sta CURR_ROOM       ; Set the new room
+            ldy #0              ; Iterate through Item IDs
+-loop:      iny                 ;   ,,
+            lda Item1-1,y       ;   Go until end of items
+            beq no_follow       ;     ,,
+            lda ItemProp-1,y    ;   Is item a follower?
+            and #IS_FOLLOWER    ;     ,,
+            beq loop            ;     ,,
+            lda TEMP            ;   If so, is it in the player's previous room?
+            cmp ITEM_ROOM-1,y   ;     ,,
+            bne loop            ;     ,,
+            lda CURR_ROOM       ;   If it is, then move it to the player's new
+            sta ITEM_ROOM-1,y   ;     room
+            beq loop
+no_follow:  txa
             pha
             jsr SetRoomAd       ; Set (RM) for room
-ch_room_t:  ldx #0              ; Check Room Timers. X is the Timer ID
+            ldx #0              ; Check Room Timers. X is the Timer ID
 -loop:      inx                 ; Advance to next ID 
             lda TimerInit-1,x   ; Reached the end of Timers?
             beq ch_clear        ;   If so, exit

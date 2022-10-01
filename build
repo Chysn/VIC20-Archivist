@@ -1,6 +1,6 @@
 #!/bin/bash
 
-xa -l toc -o ./vic/archivist.bin ./src/VICfiction.asm ./src/TheArchivist.story.asm
+xa -M -l toc -o ./vic/archivist.bin ./src/VICfiction.asm ./src/TheArchivist.story.asm
 printf "\x00\x20" | cat - ./vic/archivist.bin > ./vic/archivist.prg
 cp ./vic/archivist.prg ~/vic20/archivist
 xa -o ./vic/autostart.bin ./src/autostart.asm
